@@ -2,7 +2,7 @@
 close all; clear all; clc; 
 
 %Subject ID
-SID = 'PSItest_06b'; 
+SID = 'PSItest_07a'; 
 %Set test limb (moving limb)
 TestLimb = 'Left';
 %Number of trials
@@ -12,12 +12,10 @@ Ntrials = 50;
 gamma = 0.02; lambda = 0.02;
 
 %Set paths and directories 
-addpath('C:\Users\Lab Account\OneDrive - University of Delaware - o365\Documents\GitHub\sensory-perception-during-locomotor-adaptation\Codes');
-addpath('C:\Users\Lab Account\OneDrive - University of Delaware - o365\Documents\GitHub\sensory-perception-during-locomotor-adaptation\Codes\LiveControl');
-addpath('C:\Users\Lab Account\OneDrive - University of Delaware - o365\Documents\GitHub\sensory-perception-during-locomotor-adaptation\Codes\LiveControl\Functions');
-% Livedir = 'C:\Users\Lab Account\OneDrive - University of Delaware - o365\Documents\GitHub\sensory-perception-during-locomotor-adaptation\Codes\LiveControl';
+addpath('C:\Users\Lab Account\Documents\GitHub\Split-Belt-AFC-Reliability\Codes\Experiment');
+addpath('C:\Users\Lab Account\Documents\GitHub\Split-Belt-AFC-Reliability\Codes\Experiment\Functions');
 Livedir = 'C:\Program Files\Vicon\DataStream SDK\Win64\MATLAB';
-datadir = 'C:\Users\Lab Account\OneDrive - University of Delaware - o365\Documents\GitHub\sensory-perception-during-locomotor-adaptation\Data\TestRetest_PSI';
+datadir = 'C:\Users\Lab Account\Documents\GitHub\Split-Belt-AFC-Reliability\Data\TestRetest_PSI';
 backupdir = 'C:\Users\Lab Account\University of Delaware - o365\Team-CHS-PT-Morton Lab - Split-Belt Recal - Jonathan - Split-Belt Recal - Jonathan\Data\Backup';
 cd(datadir);
 

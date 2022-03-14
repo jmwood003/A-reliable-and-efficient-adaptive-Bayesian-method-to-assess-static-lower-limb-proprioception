@@ -15,7 +15,7 @@ end
 %Specify the priors (make them pretty wide, but reasonable)
 %we are working in 2d space now
 alpha_p = normpdf(alpha_range,0,20)-offset;
-beta_p = exppdf(beta_range,100);
+beta_p = exppdf(beta_range,50);
 prior = beta_p'*alpha_p;
 
 %Treadmill controller from this site:
