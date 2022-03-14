@@ -43,7 +43,8 @@ toc
 %% AFC task
 
 %Time variables
-PhaseStart = datetime('now');
+Date = datetime('now');
+PhaseStart = datestr(Date);
 timevar = tic;
 
 %Run task
@@ -89,8 +90,8 @@ set(gca,'FontName','Ariel','FontSize',15);
 
 %Save data
 cd(datadir);
-save([SID '_data'], 'alpha_EV', 'beta_EV', 'AllStarts', 'AllStims', 'AllResponses', 'BinaryResponses', 'elapsedTime', 'PhaseStart');
+save([SID '_data'], 'alpha_EV', 'beta_EV', 'AllStarts', 'AllStims', 'AllResponses', 'BinaryResponses', 'elapsedTime', 'PhaseStart', 'BslDiff');
 saveas(PSIfig,[SID '_fig.fig']);
 cd(backupdir);
-save([SID '_data'], 'alpha_EV', 'beta_EV', 'AllStarts', 'AllStims', 'AllResponses', 'BinaryResponses', 'elapsedTime', 'PhaseStart');
+save([SID '_data'], 'alpha_EV', 'beta_EV', 'AllStarts', 'AllStims', 'AllResponses', 'BinaryResponses', 'elapsedTime', 'PhaseStart', 'BslDiff');
 
