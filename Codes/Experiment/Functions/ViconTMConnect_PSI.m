@@ -14,7 +14,7 @@ end
 
 %Specify the priors (make them pretty wide, but reasonable)
 %we are working in 2d space now
-alpha_p = normpdf(alpha_range,0,20);
+alpha_p = normpdf(alpha_range,offset,20);
 beta_p = exppdf(beta_range,50);
 prior = beta_p'*alpha_p;
 
