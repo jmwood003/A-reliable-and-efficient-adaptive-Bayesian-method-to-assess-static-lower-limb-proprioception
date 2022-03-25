@@ -2,7 +2,7 @@
 close all; clear all; clc; 
 
 %Subject ID
-SID = 'PSItest_12b'; 
+SID = 'PSItest_14a'; 
 %Set test limb (moving limb)
 TestLimb = 'Left';
 %Number of trials
@@ -31,9 +31,10 @@ S = 1;
 offset = round(BslDiff);
 
 %Ranges for the stimulus, alpha and beta parameters
-X = linspace(-50,50,101)-offset;
-alpha_range = linspace(-50,50,101)-offset;
-beta_range = linspace(0.001,50,101);
+X = -100:10:100;
+X = X - offset;
+alpha_range = linspace(-100,100,201)-offset;
+beta_range = linspace(0.001,100,201);
 
 %Create lookup table
 [pr_left_x, pr_right_x] = psi_lookupT(X, alpha_range, beta_range);
@@ -55,16 +56,27 @@ cd(Livedir);
 
 elapsedTime = toc(timevar);
 
+%Plot the estimated psi and the actual data
 psi_est = gamma + (1-lambda-gamma) * normcdf(X,alpha_EV(end),beta_EV(end));
 C = lines(5);
-estC = C(2,:);
+dataC = C(1,:);
+psiC = C(2,:);
+
+%Create new vectors for repeated stimuli 
+Unique_stims = unique(AllStims,'stable');
+Nstims = []; Kleft = [];
+for s = 1:length(Unique_stims)
+  stim_idx = find(Unique_stims(s)==AllStims);
+  Nstims(s) = length(stim_idx);
+  Kleft(s) = sum(BinaryResponses(stim_idx));
+end
 
 %Plot
-PSIfig = figure; subplot(2,4,1:3); hold on
-plot(1:Ntrials,alpha_EV,'o-','linewidth',2);
-plot(1:Ntrials,AllStims,'ko-','linewidth',2);
-plot(1:Ntrials,AllStarts,'ko-','linewidth',0.5);
-plot(1:Ntrials,zeros(1,Ntrials),'k--','linewidth',2);
+PSIfig = figure; subplot(2,4,1:2); hold on
+plot(1:length(alpha_EV),alpha_EV,'o-','linewidth',2);
+plot(1:length(AllStims),AllStims,'ko-','linewidth',2);
+plot(1:length(AllStarts),AllStarts,'ko-','linewidth',0.5);
+plot(1:length(alpha_EV),zeros(1,length(alpha_EV)),'k--','linewidth',2);
 xlabel('Trial'); ylabel('Stimiulus');
 legend(['\alpha = ' num2str(round(alpha_EV(end),2))],'Stimulus','Start Positions');
 legend('boxoff');
@@ -72,20 +84,22 @@ ylim([-50 50]);
 title([strrep(SID,'_',' ') ' - trial by trial']);
 set(gca,'FontName','Ariel','FontSize',15);
 
-subplot(2,4,5:7); hold on
-plot(1:Ntrials,beta_EV,'ro-','linewidth',2);
-plot(1:Ntrials,zeros(1,Ntrials),'k--','linewidth',2);
+subplot(2,4,5:6); hold on
+plot(1:length(beta_EV),beta_EV,'ro-','linewidth',2);
+plot(1:length(beta_EV),zeros(1,length(beta_EV)),'k--','linewidth',2);
 xlabel('Trial'); ylabel('Stimiulus');
 legend(['\beta = ' num2str(round(beta_EV(end),2))]);
 legend('boxoff');
 ylim([0 50]);
 set(gca,'FontName','Ariel','FontSize',15);
 
-subplot(2,4,[4 8]); hold on
-plot(psi_est,X,'Color',estC,'linewidth',2);
+subplot(2,4,[3 4 7 8]); hold on
+plot(X,psi_est,'Color',psiC,'linewidth',2);
+plot(Unique_stims,(Kleft/Nstims),'o', 'MarkerEdgeColor',dataC, 'MarkerFaceColor',dataC);
 legend('Estimated Psi','location','northwest'); legend('boxoff');
 xlabel('p_{left more foreward}');
-title('Estimate');     ylim([-50 50]);
+title('Estimate');    
+xlim([-100 100]); ylim([0 1]);
 set(gca,'FontName','Ariel','FontSize',15);
 
 %Save data

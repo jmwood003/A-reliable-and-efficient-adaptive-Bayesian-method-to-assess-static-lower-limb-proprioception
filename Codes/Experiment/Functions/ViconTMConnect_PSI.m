@@ -1,7 +1,7 @@
 function [alpha_EV, beta_EV, AllStarts, AllStims, AllResponses, BinaryResponses] = ViconTMConnect_PSI(Ntrials, X, alpha_range, beta_range, pr_left_lookup, pr_right_lookup, TLstr, lambda, gamma, offset)
 
 rng('shuffle');
-strtpos_sigma = 40;
+strtpos_sigma = 50;
 
 %Set the first round of start positions (changed every 10 trials)
 %If TBidx == 1, the start position is from the top, if 0, it is from
@@ -14,8 +14,8 @@ end
 
 %Specify the priors (make them pretty wide, but reasonable)
 %we are working in 2d space now
-alpha_p = normpdf(alpha_range,offset,20);
-beta_p = exppdf(beta_range,50);
+alpha_p = normpdf(alpha_range,-offset,20);
+beta_p = exppdf(beta_range,20);
 prior = beta_p'*alpha_p;
 
 %Treadmill controller from this site:
@@ -490,7 +490,7 @@ while trial <= Ntrials
           response = input(['Trial # ' num2str(trial) '; Response (r or l)?'],'s');
       end
       if trial == 1
-          response = input(['Re-enter response'],'s');
+          response = input(['Re-enter response: '],'s');
       end
       AllResponses{trial} = response;
       
@@ -499,8 +499,6 @@ while trial <= Ntrials
           BinaryResponses(trial) = 1;
       elseif strcmp(response,'r')==1
           BinaryResponses(trial) = 0;
-      else
-          keyboard;
       end
 
       %Go back to stand normally prompt
@@ -521,14 +519,14 @@ while trial <= Ntrials
       %Calculate the likelihood of this response given the current parameters
       for a = 1:length(alpha_range)
           for b = 1:length(beta_range)
-              phi = gamma + (1-lambda-gamma) * normcdf(Unique_stims,alpha_range(a),beta_range(b));
-              likelihood_2d(b,a) = prod((phi.^Kleft).*((1-phi).^(Nstims - Kleft)));
+              psi = gamma + (1-lambda-gamma) * normcdf(Unique_stims,alpha_range(a),beta_range(b));
+              likelihood(b,a) = prod((psi.^Kleft).*((1-psi).^(Nstims - Kleft)));
           end
       end
 
       %Calculate the posterior and normalize
-      posterior = likelihood_2d.*prior;
-      posterior = posterior./sum(sum(posterior));
+      posterior = likelihood.*prior;
+      posterior = posterior./nansum(nansum(posterior));
 
       %Marginalize and check the plot
       alpha_post = nansum(posterior,1);
@@ -548,6 +546,11 @@ while trial <= Ntrials
       trial = trial+1;
       if trial > Ntrials
           break
+      elseif trial == 25 %Break half way though 
+          keyboard;
+          
+          [Post_breakDiff,~,~] = ViconTMConnect_StaticCal(1,TLstr);
+
       end
       
       %Calculate the best stimulus for the next trial using information entropy     
@@ -598,6 +601,9 @@ while trial <= Ntrials
       end
 
   end
+  
+  
+  
   
   %Format treadmill input
   if strcmp(TLstr,'Left')==1
