@@ -275,7 +275,7 @@ RB = uibutton(SubjDisp,'Position',[800 200 300 200],'FontSize',75,'BackgroundCol
 RB.Text = 'Right';
 RB.Visible = 'off';
 
-%user interface for force plates
+%User interface for force plates
 ForceDisp = uifigure('Name','Forces','Position',[400 300 500 500]);
 FGtitle = uilabel(ForceDisp, 'Position',[175 300 300 200], 'FontSize',30);
 FGtitle.Text = 'Force Ratio';
@@ -426,7 +426,7 @@ while trial <= Ntrials
       
       disp(['Trial # ' num2str(trial) ':']);
       disp(['Start pos: ' num2str(startpos)]);
-        
+     
       %Stop treadmill
       TMtestSpeed = 0;  
       %Format treadmill input
@@ -548,20 +548,17 @@ while trial <= Ntrials
           break
       elseif trial == 26 %Break half way though 
           keyboard;
-          
-%           [Post_breakDiff,~,~] = ViconTMConnect_StaticCal(1,TLstr);
-
       end
       
       %Calculate the best stimulus for the next trial using information entropy     
       %Loop through all potential stimulus values
       for x = 1:length(X) 
-          
+
           %Calculate the probability of getting response r, after presenting
           %test x at the next trial
           pr_left_x = nansum(nansum(pr_left_lookup(:,:,x).*prior));
           pr_right_x = nansum(nansum(pr_right_lookup(:,:,x).*prior));
-            
+
           %Calculate the posterior distribution for both responses
           Post_left = pr_left_lookup(:,:,x).*prior;
           Post_left = Post_left./pr_left_x;
@@ -573,13 +570,13 @@ while trial <= Ntrials
           H_right = -nansum(nansum(Post_right.*log2(Post_right)));
 
           EH(x) = (H_left*pr_left_x) + (H_right*pr_right_x);
-        
+
       end
-    
+
       %Find the simulus that minimizes entropy
       [~,minH_idx] = min(EH);
       AllStims(trial) = X(minH_idx);
-            
+
       %Get a new start position 
       startpos = round(normrnd(AllStims(trial),strtpos_sigma));
       while TBidx(trial)==1 && startpos <= AllStims(trial) %This means that the start position should be above but it is below

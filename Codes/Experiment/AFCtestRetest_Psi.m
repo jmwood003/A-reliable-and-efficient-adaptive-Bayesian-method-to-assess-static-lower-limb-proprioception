@@ -2,13 +2,13 @@
 close all; clear all; clc; 
 
 %Subject ID
-SID = 'PSItest_15b'; 
+SID = 'PSItest_16b'; 
 %Set test limb (moving limb)
 TestLimb = 'Left';
 %Number of trials
 Ntrials = 50;
 
-%Preset gamma and labmda
+%Set gamma and labmda
 gamma = 0.02; lambda = 0.02;
 
 %Set paths and directories 
