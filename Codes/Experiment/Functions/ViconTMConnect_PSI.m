@@ -546,10 +546,10 @@ while trial <= Ntrials
       trial = trial+1;
       if trial > Ntrials
           break
-      elseif trial == 25 %Break half way though 
+      elseif trial == 26 %Break half way though 
           keyboard;
           
-          [Post_breakDiff,~,~] = ViconTMConnect_StaticCal(1,TLstr);
+%           [Post_breakDiff,~,~] = ViconTMConnect_StaticCal(1,TLstr);
 
       end
       
