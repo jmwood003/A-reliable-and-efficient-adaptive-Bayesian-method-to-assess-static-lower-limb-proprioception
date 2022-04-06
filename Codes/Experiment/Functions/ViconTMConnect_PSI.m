@@ -18,6 +18,27 @@ alpha_p = normpdf(alpha_range,-offset,20);
 beta_p = exppdf(beta_range,20);
 prior = beta_p'*alpha_p;
 
+%We are injecting some extreme stimuli into the trials 
+%Every n trials: 
+extreme_space = 10; 
+
+%This loop randomizes when the extreme stimulus will be provided
+%And determines which stimulus will be provided
+for e = 1:round(Ntrial/extreme_space)
+    idx = 2:extreme_space;
+    if e==1
+        extreme_trials(e) = randi([2,extreme_space]);
+    else
+        extreme_trials(e) = randi([1,extreme_space])+(10*(e-1));
+    end
+end
+et_idx = 1; %Set the index for these trials 
+%Psudorandomize the extreme options (note that I have one more negative
+%stimulus added vs positive - based on pilot testing individuals tend to be
+%biased more positive
+extreme_options = [-100,-100,-90,90,100];
+extreme_stims = extreme_options(randperm(length(extreme_options)));
+
 %Treadmill controller from this site:
 % https://github.com/willpower2727/HMRL-Matlab-Treadmill-Functions
 
@@ -245,10 +266,10 @@ AllStims(1) = stimulus;
 
 %Get a start position and record in a different variable
 startpos = round(normrnd(stimulus,strtpos_sigma));
-while TBidx(1)==1 && startpos < stimulus %This means that the start position should be above but it is below
+while TBidx(1)==1 && startpos <= stimulus %This means that the start position should be above but it is below
     startpos = round(normrnd(stimulus,strtpos_sigma));
 end
-while TBidx(1)==0 && startpos > stimulus %This means that the start position should be below but it is above
+while TBidx(1)==0 && startpos >= stimulus %This means that the start position should be below but it is above
     startpos = round(normrnd(stimulus,strtpos_sigma));
 end
 AllStarts(1) = startpos;
@@ -550,32 +571,37 @@ while trial <= Ntrials
           keyboard;
       end
       
-      %Calculate the best stimulus for the next trial using information entropy     
-      %Loop through all potential stimulus values
-      for x = 1:length(X) 
+      if trial==extreme_trials(et_idx)
+          AllStims(trial) = extreme_stims(et_idx);
+          et_idx = et_idx+1;
+      else
+          %Calculate the best stimulus for the next trial using information entropy     
+          %Loop through all potential stimulus values
+          for x = 1:length(X) 
 
-          %Calculate the probability of getting response r, after presenting
-          %test x at the next trial
-          pr_left_x = nansum(nansum(pr_left_lookup(:,:,x).*prior));
-          pr_right_x = nansum(nansum(pr_right_lookup(:,:,x).*prior));
+              %Calculate the probability of getting response r, after presenting
+              %test x at the next trial
+              pr_left_x = nansum(nansum(pr_left_lookup(:,:,x).*prior));
+              pr_right_x = nansum(nansum(pr_right_lookup(:,:,x).*prior));
 
-          %Calculate the posterior distribution for both responses
-          Post_left = pr_left_lookup(:,:,x).*prior;
-          Post_left = Post_left./pr_left_x;
-          Post_right = pr_right_lookup(:,:,x).*prior;
-          Post_right = Post_right./pr_right_x;        
+              %Calculate the posterior distribution for both responses
+              Post_left = pr_left_lookup(:,:,x).*prior;
+              Post_left = Post_left./pr_left_x;
+              Post_right = pr_right_lookup(:,:,x).*prior;
+              Post_right = Post_right./pr_right_x;        
 
-          %Estimate the entropy of the posterior distribution for each response
-          H_left = -nansum(nansum(Post_left.*log2(Post_left)));
-          H_right = -nansum(nansum(Post_right.*log2(Post_right)));
+              %Estimate the entropy of the posterior distribution for each response
+              H_left = -nansum(nansum(Post_left.*log2(Post_left)));
+              H_right = -nansum(nansum(Post_right.*log2(Post_right)));
 
-          EH(x) = (H_left*pr_left_x) + (H_right*pr_right_x);
-
-      end
-
+              EH(x) = (H_left*pr_left_x) + (H_right*pr_right_x);
+          end
+      
       %Find the simulus that minimizes entropy
       [~,minH_idx] = min(EH);
       AllStims(trial) = X(minH_idx);
+
+      end
 
       %Get a new start position 
       startpos = round(normrnd(AllStims(trial),strtpos_sigma));
