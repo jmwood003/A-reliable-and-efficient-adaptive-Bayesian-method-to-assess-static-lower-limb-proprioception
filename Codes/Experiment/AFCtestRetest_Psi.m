@@ -2,7 +2,7 @@
 close all; clear all; clc; 
 
 %Subject ID
-SID = 'PSItest_16b'; 
+SID = 'PSItest_18b'; 
 %Set test limb (moving limb)
 TestLimb = 'Left';
 %Number of trials
@@ -18,6 +18,10 @@ Livedir = 'C:\Program Files\Vicon\DataStream SDK\Win64\MATLAB';
 datadir = 'C:\Users\Lab Account\Documents\GitHub\Split-Belt-AFC-Reliability\Data\TestRetest_PSI';
 backupdir = 'C:\Users\Lab Account\University of Delaware - o365\Team-CHS-PT-Morton Lab - Split-Belt Recal - Jonathan - Split-Belt Recal - Jonathan\Data\Backup';
 cd(datadir);
+
+%% Psi test Orientation
+
+ViconTMConnect_Psi_orientation()
 
 %% Baseline difference calculation
 clc;
@@ -39,6 +43,8 @@ beta_range = linspace(0.001,100,201);
 %Create lookup table
 [pr_left_x, pr_right_x] = psi_lookupT(X, alpha_range, beta_range);
 
+disp(['Trial Complete, baseline bias = ', num2str(BslDiff)]);
+
 toc
 
 %% AFC task
@@ -57,16 +63,16 @@ cd(Livedir);
 elapsedTime = toc(timevar);
 
 %Plot the estimated psi and the actual data
-psi_est = gamma + (1-lambda-gamma) * normcdf(X,alpha_EV(end),beta_EV(end));
+psi_est = gamma + (1-lambda-gamma) * normcdf(X,alpha_EV(end)+round(BslDiff),beta_EV(end));
 C = lines(5);
 dataC = C(1,:);
 psiC = C(2,:);
 
 %Create new vectors for repeated stimuli 
-Unique_stims = unique(AllStims,'stable');
+Unique_stims = unique(AllStims+round(BslDiff));
 Nstims = []; Kleft = [];
 for s = 1:length(Unique_stims)
-  stim_idx = find(Unique_stims(s)==AllStims);
+  stim_idx = find(Unique_stims(s)==AllStims+round(BslDiff));
   Nstims(s) = length(stim_idx);
   Kleft(s) = sum(BinaryResponses(stim_idx));
 end
@@ -75,12 +81,12 @@ end
 PSIfig = figure; subplot(2,4,1:2); hold on
 plot(1:length(alpha_EV),alpha_EV,'o-','linewidth',2);
 plot(1:length(AllStims),AllStims,'ko-','linewidth',2);
-plot(1:length(AllStarts),AllStarts,'ko-','linewidth',0.5);
+% plot(1:length(AllStarts),AllStarts,'ko-','linewidth',0.5);
 plot(1:length(alpha_EV),zeros(1,length(alpha_EV)),'k--','linewidth',2);
 xlabel('Trial'); ylabel('Stimiulus');
 legend(['\alpha = ' num2str(round(alpha_EV(end),2))],'Stimulus','Start Positions');
 legend('boxoff');
-ylim([-50 50]);
+ylim([-100 100]);
 title([strrep(SID,'_',' ') ' - trial by trial']);
 set(gca,'FontName','Ariel','FontSize',15);
 
@@ -90,12 +96,12 @@ plot(1:length(beta_EV),zeros(1,length(beta_EV)),'k--','linewidth',2);
 xlabel('Trial'); ylabel('Stimiulus');
 legend(['\beta = ' num2str(round(beta_EV(end),2))]);
 legend('boxoff');
-ylim([0 50]);
+ylim([0 100]);
 set(gca,'FontName','Ariel','FontSize',15);
 
 subplot(2,4,[3 4 7 8]); hold on
 plot(X,psi_est,'Color',psiC,'linewidth',2);
-plot(Unique_stims,(Kleft/Nstims),'o', 'MarkerEdgeColor',dataC, 'MarkerFaceColor',dataC);
+plot(Unique_stims,(Kleft./Nstims),'o', 'MarkerEdgeColor',dataC, 'MarkerFaceColor',dataC);
 legend('Estimated Psi','location','northwest'); legend('boxoff');
 xlabel('p_{left more foreward}');
 title('Estimate');    

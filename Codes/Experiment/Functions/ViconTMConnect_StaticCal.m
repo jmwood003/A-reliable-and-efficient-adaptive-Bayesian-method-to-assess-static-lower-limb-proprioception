@@ -250,8 +250,6 @@ end
 % Disconnect and dispose
 MyClient.Disconnect();
 
-disp(['Trial Complete, mean bias = ', num2str(BslDiff)]);
-
 % % Unload the SDK
 % fprintf( 'Unloading SDK...' );
 % Client.UnloadViconDataStreamSDK();

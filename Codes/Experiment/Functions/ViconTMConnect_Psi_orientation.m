@@ -1,44 +1,10 @@
-function [alpha_EV, beta_EV, AllStarts, AllStims, AllResponses, BinaryResponses] = ViconTMConnect_PSI(Ntrials, X, alpha_range, beta_range, pr_left_lookup, pr_right_lookup, TLstr, lambda, gamma, offset)
+function ViconTMConnect_Psi_orientation()
 
-rng('shuffle');
-strtpos_sigma = 50;
+StartPos = [-60, 60];
+EndPos = [-100, 100];
 
-%Set the first round of start positions (changed every 10 trials)
-%If TBidx == 1, the start position is from the top, if 0, it is from
-%the bottom 
-TBidx = rand(1,Ntrials)>0.5;
-half = Ntrials/2;
-while sum(TBidx) < half || sum(TBidx) > half
-    TBidx = rand(1,Ntrials)>0.5;
-end
-
-%Specify the priors (make them pretty wide, but reasonable)
-%we are working in 2d space now
-alpha_p = normpdf(alpha_range,-offset,20);
-beta_p = exppdf(beta_range,20);
-prior = beta_p'*alpha_p;
-
-%We are injecting some extreme stimuli into the trials 
-%Every n trials: 
-extreme_space = 10; 
-
-%This loop randomizes when the extreme stimulus will be provided
-%And determines which stimulus will be provided
-for e = 1:round(Ntrials/extreme_space)
-    idx = 2:extreme_space;
-    if e==1
-        extreme_trials(e) = randi([2,extreme_space]);
-    else
-        extreme_trials(e) = randi([1,extreme_space])+(10*(e-1));
-    end
-end
-extreme_trials = [extreme_trials, nan]; %Pad with nans
-et_idx = 1; %Set the index for these trials
-%Psudorandomize the extreme options (note that I have one more negative
-%stimulus added vs positive - based on pilot testing individuals tend to be
-%biased more positive
-extreme_options = [-100,-100,-90,90,100]-offset;
-extreme_stims = extreme_options(randperm(length(extreme_options)));
+startpos = StartPos(1);
+stimulus = nan; %Need the stimulus to be nan at first so the first treadmill stop is the start position 
 
 %Treadmill controller from this site:
 % https://github.com/willpower2727/HMRL-Matlab-Treadmill-Functions
@@ -237,46 +203,6 @@ fopen(t);
 %--------------------------------------------------------------------------
 %--------------------------------------------------------------------------
 
-%Calculate first stimulus--------------------------------------------------
-%Loop through all potential stimulus values
-for x = 1:length(X)
-    
-    %Calculate the probability of getting response r, after presenting
-    %test x at the next trial
-    pr_left_x = nansum(nansum(pr_left_lookup(:,:,x).*prior));
-    pr_right_x = nansum(nansum(pr_right_lookup(:,:,x).*prior));
-
-    %Calculate the posterior distribution for both responses
-    Post_left = pr_left_lookup(:,:,x).*prior;
-    Post_left = Post_left./pr_left_x;
-    Post_right = pr_right_lookup(:,:,x).*prior;
-    Post_right = Post_right./pr_right_x;        
-
-    %Estimate the entropy of the posterior distribution for each response
-    H_left = -nansum(nansum(Post_left.*log2(Post_left)));
-    H_right = -nansum(nansum(Post_right.*log2(Post_right)));
-
-    EH(x) = (H_left*pr_left_x) + (H_right*pr_right_x);
-
-end
-
-%find the simulus that minimizes entropy
-[~,minH_idx] = min(EH);
-stimulus = X(minH_idx);
-AllStims(1) = stimulus;
-
-%Get a start position and record in a different variable
-startpos = round(normrnd(stimulus,strtpos_sigma));
-while TBidx(1)==1 && startpos <= stimulus %This means that the start position should be above but it is below
-    startpos = round(normrnd(stimulus,strtpos_sigma));
-end
-while TBidx(1)==0 && startpos >= stimulus %This means that the start position should be below but it is above
-    startpos = round(normrnd(stimulus,strtpos_sigma));
-end
-AllStarts(1) = startpos;
-
-stimulus = nan; %Need the stimulus to be nan at first so the first treadmill stop is the start position 
-
 %Initialize user interface fig---------------------------------------------
 % SubjDisp = uifigure('Name','Instrunctions','Position',[4000 300 500 500],'Color',[0.3010 0.7450 0.9330],'WindowState','fullscreen');
 SubjDisp = uifigure('Name','Instrunctions','Position',[4000 300 500 500],'WindowState','fullscreen');
@@ -319,7 +245,7 @@ alpha_EV = [];
 beta_EV = [];
 
 % Loop until the message box is dismissed
-while trial <= Ntrials
+while trial <= 2
 
   drawnow limitrate;
   Counter = Counter + 1;
@@ -469,9 +395,9 @@ while trial <= Ntrials
       %Reset start position
       startpos = nan;
       pause(rand(1));
-      
+
       %Set the stimulus position
-      stimulus = AllStims(trial);
+      stimulus = EndPos(trial);
       
       %Move treadmill to new stimulus position    
       if stimulus < MkrDiff
@@ -507,60 +433,13 @@ while trial <= Ntrials
       RB.Visible = 'on';
       
       response = input(['Response (r or l)?'],'s');
-      while strcmp(response,'r')==0 && strcmp(response,'l')==0
-          disp('incorrect response entered');
-          response = input(['Trial # ' num2str(trial) '; Response (r or l)?'],'s');
-      end
-      if trial == 1
-          response = input(['Re-enter response: '],'s');
-      end
-      AllResponses{trial} = response;
-      
-      %Convert the resoponse to a binary response (probability of left)
-      if strcmp(response,'l')==1
-          BinaryResponses(trial) = 1;
-      elseif strcmp(response,'r')==1
-          BinaryResponses(trial) = 0;
-      end
 
       %Go back to stand normally prompt
       normlbl.Visible = 'off';
       choicelbl.Visible = 'off';
       LB.Visible = 'off';
       RB.Visible = 'off';
-      
-      %Create new vectors for repeated stimuli 
-      Unique_stims = unique(AllStims,'stable');
-      Nstims = []; Kleft = [];
-      for s = 1:length(Unique_stims)
-          stim_idx = find(Unique_stims(s)==AllStims);
-          Nstims(s) = length(stim_idx);
-          Kleft(s) = sum(BinaryResponses(stim_idx));
-      end
-    
-      %Calculate the likelihood of this response given the current parameters
-      for a = 1:length(alpha_range)
-          for b = 1:length(beta_range)
-              psi = gamma + (1-lambda-gamma) * normcdf(Unique_stims,alpha_range(a),beta_range(b));
-              likelihood(b,a) = prod((psi.^Kleft).*((1-psi).^(Nstims - Kleft)));
-          end
-      end
 
-      %Calculate the posterior and normalize
-      posterior = likelihood.*prior;
-      posterior = posterior./nansum(nansum(posterior));
-
-      %Marginalize and check the plot
-      alpha_post = nansum(posterior,1);
-      beta_post = nansum(posterior,2)';
-
-      %Calculate the mean of each posterior
-      alpha_EV(trial) = nansum(alpha_range.*alpha_post);
-      beta_EV(trial) = nansum(beta_range.*beta_post);  
-
-      %The posterior becomes the prior
-      prior = posterior;
-      
       %Reset stimulus position
       stimulus = nan;
       
@@ -568,51 +447,10 @@ while trial <= Ntrials
       trial = trial+1;
       if trial > Ntrials
           break
-      elseif trial == 26 %Break half way though 
-          keyboard;
       end
       
-      if trial==extreme_trials(et_idx)
-          AllStims(trial) = extreme_stims(et_idx);
-          et_idx = et_idx+1;
-      else
-          %Calculate the best stimulus for the next trial using information entropy     
-          %Loop through all potential stimulus values
-          for x = 1:length(X) 
-
-              %Calculate the probability of getting response r, after presenting
-              %test x at the next trial
-              pr_left_x = nansum(nansum(pr_left_lookup(:,:,x).*prior));
-              pr_right_x = nansum(nansum(pr_right_lookup(:,:,x).*prior));
-
-              %Calculate the posterior distribution for both responses
-              Post_left = pr_left_lookup(:,:,x).*prior;
-              Post_left = Post_left./pr_left_x;
-              Post_right = pr_right_lookup(:,:,x).*prior;
-              Post_right = Post_right./pr_right_x;        
-
-              %Estimate the entropy of the posterior distribution for each response
-              H_left = -nansum(nansum(Post_left.*log2(Post_left)));
-              H_right = -nansum(nansum(Post_right.*log2(Post_right)));
-
-              EH(x) = (H_left*pr_left_x) + (H_right*pr_right_x);
-          end
-      
-      %Find the simulus that minimizes entropy
-      [~,minH_idx] = min(EH);
-      AllStims(trial) = X(minH_idx);
-
-      end
-
       %Get a new start position 
-      startpos = round(normrnd(AllStims(trial),strtpos_sigma));
-      while TBidx(trial)==1 && startpos <= AllStims(trial) %This means that the start position should be above but it is below
-          startpos = round(normrnd(AllStims(trial),strtpos_sigma));
-      end
-      while TBidx(trial)==0 && startpos >= AllStims(trial) %This means that the start position should be below but it is above
-          startpos = round(normrnd(AllStims(trial),strtpos_sigma));
-      end
-      AllStarts(trial) = startpos;
+      startpos = StartPos(trial);
 
       disp(' ');
   else
@@ -625,9 +463,6 @@ while trial <= Ntrials
       end
 
   end
-  
-  
-  
   
   %Format treadmill input
   if strcmp(TLstr,'Left')==1
