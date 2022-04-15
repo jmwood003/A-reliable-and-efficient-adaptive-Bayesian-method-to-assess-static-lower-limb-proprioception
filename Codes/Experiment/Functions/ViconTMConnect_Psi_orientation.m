@@ -1,4 +1,4 @@
-function ViconTMConnect_Psi_orientation()
+function ViconTMConnect_Psi_orientation(TLstr)
 
 StartPos = [-60, 60];
 EndPos = [-100, 100];
@@ -241,8 +241,6 @@ SkippedFrames = [];
 Counter = 1;
 tStart = tic;
 trial = 1; 
-alpha_EV = [];
-beta_EV = [];
 
 % Loop until the message box is dismissed
 while trial <= 2
@@ -445,7 +443,7 @@ while trial <= 2
       
       %Move to the next trial
       trial = trial+1;
-      if trial > Ntrials
+      if trial > length(EndPos)
           break
       end
       
