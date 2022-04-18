@@ -2,7 +2,7 @@
 close all; clear all; clc; 
 
 %Subject ID
-SID = 'PSItest_18b'; 
+SID = 'PSItest_20b'; 
 %Set test limb (moving limb)
 TestLimb = 'Left';
 %Number of trials
@@ -20,8 +20,8 @@ backupdir = 'C:\Users\Lab Account\University of Delaware - o365\Team-CHS-PT-Mort
 cd(datadir);
 
 %% Psi test Orientation
-
-ViconTMConnect_Psi_orientation()
+cd(Livedir);
+ViconTMConnect_Psi_orientation(TestLimb)
 
 %% Baseline difference calculation
 clc;
@@ -77,14 +77,17 @@ for s = 1:length(Unique_stims)
   Kleft(s) = sum(BinaryResponses(stim_idx));
 end
 
+t_x = 1:length(AllStims);
+Corrected_stims = AllStims+round(BslDiff); 
 %Plot
 PSIfig = figure; subplot(2,4,1:2); hold on
-plot(1:length(alpha_EV),alpha_EV,'o-','linewidth',2);
-plot(1:length(AllStims),AllStims,'ko-','linewidth',2);
-% plot(1:length(AllStarts),AllStarts,'ko-','linewidth',0.5);
+plot(t_x,alpha_EV,'o-','linewidth',2);
+plot(t_x(BinaryResponses==1), Corrected_stims(BinaryResponses==1),'ko','MarkerFaceColor','k');
+plot(t_x(BinaryResponses==0), Corrected_stims(BinaryResponses==0),'ko','MarkerFaceColor','none');
+plot(1:length(AllStims),AllStims+round(BslDiff),'k-','linewidth',1.5);
 plot(1:length(alpha_EV),zeros(1,length(alpha_EV)),'k--','linewidth',2);
 xlabel('Trial'); ylabel('Stimiulus');
-legend(['\alpha = ' num2str(round(alpha_EV(end),2))],'Stimulus','Start Positions');
+legend(['\alpha estimate = ' num2str(round(alpha_EV(end),2))],'Stimulus (r = "left")','Stimulus (r = "right")');
 legend('boxoff');
 ylim([-100 100]);
 title([strrep(SID,'_',' ') ' - trial by trial']);
@@ -102,8 +105,8 @@ set(gca,'FontName','Ariel','FontSize',15);
 subplot(2,4,[3 4 7 8]); hold on
 plot(X,psi_est,'Color',psiC,'linewidth',2);
 plot(Unique_stims,(Kleft./Nstims),'o', 'MarkerEdgeColor',dataC, 'MarkerFaceColor',dataC);
-legend('Estimated Psi','location','northwest'); legend('boxoff');
-xlabel('p_{left more foreward}');
+legend('Estimated Psi','Responses','location','northwest'); legend('boxoff');
+ylabel('p_{left more foreward}'); xlabel('Stimulus')
 title('Estimate');    
 xlim([-100 100]); ylim([0 1]);
 set(gca,'FontName','Ariel','FontSize',15);
