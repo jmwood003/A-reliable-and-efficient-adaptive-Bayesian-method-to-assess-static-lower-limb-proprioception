@@ -1,14 +1,18 @@
-function [alpha_EV, beta_EV, AllStarts, AllStims, AllResponses, BinaryResponses] = ViconTMConnect_PSI(Ntrials, X, alpha_range, beta_range, pr_left_lookup, pr_right_lookup, TLstr, lambda, gamma, offset)
+function [alpha_EV, beta_EV, AllStarts, AllStims, AllResponses, BinaryResponses] = ViconTMConnect_PSI(Ntrials, X, alpha_range, beta_range, pr_left_lookup, pr_right_lookup, TLstr, offset)
 
 rng('shuffle');
 strtpos_sigma = 50;
+
+%Treadmill Speeds
+minspeed = 10;
+maxspeed = 30;
 
 %Set the first round of start positions (changed every 10 trials)
 %If TBidx == 1, the start position is from the top, if 0, it is from
 %the bottom 
 TBidx = rand(1,Ntrials)>0.5;
-half = Ntrials/2;
-while sum(TBidx) < half || sum(TBidx) > half
+half = round(Ntrials/2);
+while sum(TBidx) == half
     TBidx = rand(1,Ntrials)>0.5;
 end
 
@@ -19,25 +23,28 @@ beta_p = exppdf(beta_range,20);
 prior = beta_p'*alpha_p;
 
 %We are injecting some extreme stimuli into the trials 
-%Every n trials: 
+%Every 10 trials: 
 extreme_space = 10; 
+start_rand=5;%Starting at the 5th trial
 
 %This loop randomizes when the extreme stimulus will be provided
 %And determines which stimulus will be provided
-for e = 1:round(Ntrials/extreme_space)
-    idx = 2:extreme_space;
-    if e==1
-        extreme_trials(e) = randi([2,extreme_space]);
-    else
-        extreme_trials(e) = randi([1,extreme_space])+(10*(e-1));
-    end
+for e = 1:floor(Ntrials/extreme_space)
+    current_idx = start_rand:start_rand+extreme_space-1;
+    random_stims = datasample(current_idx,2,'Replace',false);
+    extreme_trials(e) = random_stims(1);
+    iqr_trials(e) = random_stims(2);
+    
+    start_rand = current_idx(end)+1;
 end
-extreme_trials = [extreme_trials, nan]; %Pad with nans
-et_idx = 1; %Set the index for these trials
+extreme_trials = [extreme_trials, nan]; %Pad with nans to prevent over indexing
+iqr_trials = [iqr_trials, nan];
+et_idx = 1; iqr_idx = 1; %Set the index for these trials
+
 %Psudorandomize the extreme options (note that I have one more negative
 %stimulus added vs positive - based on pilot testing individuals tend to be
 %biased more positive
-extreme_options = [-100,-100,-90,90,100]-offset;
+extreme_options = [-100,-100,-90,-90,90,90,100,100]-offset;
 extreme_stims = extreme_options(randperm(length(extreme_options)));
 
 %Treadmill controller from this site:
@@ -202,10 +209,10 @@ Output_GetVersion = MyClient.GetVersion();
 %leg so we are only moving the left)
 if strcmp(TLstr,'Left')==1
     accR = 1500;
-    accL = 100;   
+    accL = 1500;   
 elseif strcmp(TLstr,'Right')==1
     accL = 1500;
-    accR = 100;      
+    accR = 1500;      
 else
   error('Input must be Left or Right');
 end
@@ -468,16 +475,17 @@ while trial <= Ntrials
 
       %Reset start position
       startpos = nan;
-      pause(rand(1));
-      
+      pause(2*rand(1)); %Pause for a random time period from 0-2 seconds 
+
       %Set the stimulus position
       stimulus = AllStims(trial);
       
-      %Move treadmill to new stimulus position    
+      %Move treadmill to new stimulus position   
+      speed = round(minspeed + (maxspeed-minspeed)*rand);
       if stimulus < MkrDiff
-          TMtestSpeed = 10;
+          TMtestSpeed = speed;
       else
-          TMtestSpeed = -10;
+          TMtestSpeed = -speed;
       end
       
   %Stops when the limb position equals the stimulus    
@@ -541,7 +549,7 @@ while trial <= Ntrials
       %Calculate the likelihood of this response given the current parameters
       for a = 1:length(alpha_range)
           for b = 1:length(beta_range)
-              psi = gamma + (1-lambda-gamma) * normcdf(Unique_stims,alpha_range(a),beta_range(b));
+              psi = normcdf(Unique_stims,alpha_range(a),beta_range(b));
               likelihood(b,a) = prod((psi.^Kleft).*((1-psi).^(Nstims - Kleft)));
           end
       end
@@ -568,13 +576,24 @@ while trial <= Ntrials
       trial = trial+1;
       if trial > Ntrials
           break
-      elseif trial == 26 %Break half way though 
+      elseif trial == 26 %Break at 25 
+          disp('25 trial break');
+          keyboard;
+      elseif trial==51 %Break at 50 
+          disp('50 trial break');          
           keyboard;
       end
       
       if trial==extreme_trials(et_idx)
           AllStims(trial) = extreme_stims(et_idx);
           et_idx = et_idx+1;
+      elseif trial==iqr_trials(iqr_idx)
+          addsub = [-40,-30,30,40];
+          potential_stims = round(alpha_EV(trial-1))+addsub; 
+          new_stim = potential_stims(randi(length(potential_stims)));
+          [~, stimidx] = min(abs(X-new_stim));
+          AllStims(trial) = X(stimidx);
+          iqr_idx = iqr_idx+1;
       else
           %Calculate the best stimulus for the next trial using information entropy     
           %Loop through all potential stimulus values
@@ -618,16 +637,14 @@ while trial <= Ntrials
   else
       
       %Move treadmill
+      speed = round(minspeed + (maxspeed-minspeed)*rand);
       if startpos < MkrDiff || stimulus < MkrDiff
-          TMtestSpeed = 10;
+          TMtestSpeed = speed;
       else
-          TMtestSpeed = -10;
+          TMtestSpeed = -speed;
       end
 
   end
-  
-  
-  
   
   %Format treadmill input
   if strcmp(TLstr,'Left')==1

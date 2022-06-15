@@ -6,6 +6,10 @@ EndPos = [-100, 100];
 startpos = StartPos(1);
 stimulus = nan; %Need the stimulus to be nan at first so the first treadmill stop is the start position 
 
+%Treadmill Speeds
+minspeed = 10;
+maxspeed = 30;
+
 %Treadmill controller from this site:
 % https://github.com/willpower2727/HMRL-Matlab-Treadmill-Functions
 
@@ -398,10 +402,11 @@ while trial <= 2
       stimulus = EndPos(trial);
       
       %Move treadmill to new stimulus position    
+      speed = round(minspeed + (maxspeed-minspeed)*rand);      
       if stimulus < MkrDiff
-          TMtestSpeed = 10;
+          TMtestSpeed = speed;
       else
-          TMtestSpeed = -10;
+          TMtestSpeed = -speed;
       end
       
   %Stops when the limb position equals the stimulus    
@@ -454,10 +459,11 @@ while trial <= 2
   else
       
       %Move treadmill
+      speed = round(minspeed + (maxspeed-minspeed)*rand);            
       if startpos < MkrDiff || stimulus < MkrDiff
-          TMtestSpeed = 10;
+          TMtestSpeed = speed;
       else
-          TMtestSpeed = -10;
+          TMtestSpeed = -speed;
       end
 
   end

@@ -2,14 +2,11 @@
 close all; clear all; clc; 
 
 %Subject ID
-SID = 'PSItest_20b'; 
+SID = 'PSItest_21b'; 
 %Set test limb (moving limb)
 TestLimb = 'Left';
 %Number of trials
-Ntrials = 50;
-
-%Set gamma and labmda
-gamma = 0.02; lambda = 0.02;
+Ntrials = 75;
 
 %Set paths and directories 
 addpath('C:\Users\Lab Account\Documents\GitHub\Split-Belt-AFC-Reliability\Codes\Experiment');
@@ -21,7 +18,7 @@ cd(datadir);
 
 %% Psi test Orientation
 cd(Livedir);
-ViconTMConnect_Psi_orientation(TestLimb)
+ViconTMConnect_Psi_orientation(TestLimb);
 
 %% Baseline difference calculation
 clc;
@@ -58,12 +55,12 @@ timevar = tic;
 cd(Livedir);
 [alpha_EV, beta_EV, AllStarts, AllStims, AllResponses, BinaryResponses] = ...
     ViconTMConnect_PSI(Ntrials, X, alpha_range, beta_range, ...
-    pr_left_x, pr_right_x, TestLimb, lambda, gamma, offset);
+    pr_left_x, pr_right_x, TestLimb, offset);
 
 elapsedTime = toc(timevar);
 
 %Plot the estimated psi and the actual data
-psi_est = gamma + (1-lambda-gamma) * normcdf(X,alpha_EV(end)+round(BslDiff),beta_EV(end));
+psi_est = normcdf(X,alpha_EV(end)+round(BslDiff),beta_EV(end));
 C = lines(5);
 dataC = C(1,:);
 psiC = C(2,:);
@@ -81,13 +78,13 @@ t_x = 1:length(AllStims);
 Corrected_stims = AllStims+round(BslDiff); 
 %Plot
 PSIfig = figure; subplot(2,4,1:2); hold on
-plot(t_x,alpha_EV,'o-','linewidth',2);
+plot(t_x,alpha_EV+round(BslDiff),'o-','linewidth',2);
 plot(t_x(BinaryResponses==1), Corrected_stims(BinaryResponses==1),'ko','MarkerFaceColor','k');
 plot(t_x(BinaryResponses==0), Corrected_stims(BinaryResponses==0),'ko','MarkerFaceColor','none');
 plot(1:length(AllStims),AllStims+round(BslDiff),'k-','linewidth',1.5);
 plot(1:length(alpha_EV),zeros(1,length(alpha_EV)),'k--','linewidth',2);
 xlabel('Trial'); ylabel('Stimiulus');
-legend(['\alpha estimate = ' num2str(round(alpha_EV(end),2))],'Stimulus (r = "left")','Stimulus (r = "right")');
+legend(['\alpha estimate = ' num2str(round(alpha_EV(end)+round(BslDiff),2))],'Stimulus (r = "left")','Stimulus (r = "right")');
 legend('boxoff');
 ylim([-100 100]);
 title([strrep(SID,'_',' ') ' - trial by trial']);
