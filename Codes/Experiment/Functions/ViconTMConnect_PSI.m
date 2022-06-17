@@ -303,21 +303,25 @@ LB.Text = 'Left';
 LB.Visible = 'off';
 RB = uibutton(SubjDisp,'Position',[800 200 300 200],'FontSize',75,'BackgroundColor','g');
 RB.Text = 'Right';
-RB.Visible = 'off';
-
-sdasfksdaf 
+RB.Visible = 'off'; 
 
 %User interface for force plates
 ForceDisp = uifigure('Name','Forces','Position',[400 300 500 500]);
-FGtitle = uilabel(ForceDisp, 'Position',[175 300 300 200], 'FontSize',30);
+FGtitle = uilabel(ForceDisp, 'Position',[175 350 300 200], 'FontSize',30);
 FGtitle.Text = 'Force Ratio';
-FG = uigauge(ForceDisp, 'semicircular', 'Position',[100 200 300 300],'Limits',[50 150]);
+FG = uigauge(ForceDisp, 'semicircular', 'Position',[100 250 300 300],'Limits',[50 150]);
 FG.ScaleColors = {'red','yellow','green','yellow','red'};
 FG.ScaleColorLimits = [50 80; 80 90; 90 110; 110 120; 120 150];
-LFtext = uilabel(ForceDisp,'Position',[70 80 300 200], 'FontSize',15);
+LFtext = uilabel(ForceDisp,'Position',[70 130 300 200], 'FontSize',15);
 LFtext.Text = {'Increased Left Forces'};
-RFtext = uilabel(ForceDisp,'Position',[300 80 300 200], 'FontSize',15);
+RFtext = uilabel(ForceDisp,'Position',[300 130 300 200], 'FontSize',15);
 RFtext.Text = {'Increased Right Forces'};
+
+% ERRtitle = uilabel(ForceDisp, 'Position',[150 75 300 200], 'FontSize',30);
+% ERRtitle.Text = 'Response Error';
+% uicontrol(ForceDisp,'Style','pushbutton','Callback',@pushbutton_callback)
+% EB = uibutton(ForceDisp,'Position',[150 50 200 100],'FontSize',50,'BackgroundColor','r','Callback',@pushbutton_callback);
+% EB.Text = 'ERROR!';
 
 %Initialize pre-set parameters 
 Frame = -1;
@@ -327,6 +331,9 @@ tStart = tic;
 trial = 1; 
 alpha_EV = [];
 beta_EV = [];
+
+%Error button
+ErrorButton = uicontrol('Style','text','Position',[150 150 300 100],'String','none','FontSize',50,'BackgroundColor','r','KeyPressFcn',@pushbutton_callback);
 
 % Loop until the message box is dismissed
 while trial <= Ntrials
@@ -532,10 +539,16 @@ while trial <= Ntrials
       %Convert the resoponse to a binary response (probability of left)
       if strcmp(response,'l')==1
           BinaryResponses(trial) = 1;
+          fullstr = 'left';
       elseif strcmp(response,'r')==1
           BinaryResponses(trial) = 0;
+          fullstr = 'right';          
       end
 
+      %Edit the current response
+      ErrorButton.String = fullstr;
+      
+            
       %Go back to stand normally prompt
       normlbl.Visible = 'off';
       choicelbl.Visible = 'off';
