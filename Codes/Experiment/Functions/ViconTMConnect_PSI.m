@@ -305,6 +305,8 @@ RB = uibutton(SubjDisp,'Position',[800 200 300 200],'FontSize',75,'BackgroundCol
 RB.Text = 'Right';
 RB.Visible = 'off';
 
+sdasfksdaf 
+
 %User interface for force plates
 ForceDisp = uifigure('Name','Forces','Position',[400 300 500 500]);
 FGtitle = uilabel(ForceDisp, 'Position',[175 300 300 200], 'FontSize',30);
