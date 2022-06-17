@@ -108,10 +108,10 @@ title('Estimate');
 xlim([-100 100]); ylim([0 1]);
 set(gca,'FontName','Ariel','FontSize',15);
 
-% %Save data
-% cd(datadir);
-% save([SID '_data'], 'alpha_EV', 'beta_EV', 'AllStarts', 'AllStims', 'AllResponses', 'BinaryResponses', 'elapsedTime', 'PhaseStart', 'BslDiff', 'StartSpeeds', 'StimSpeeds');
-% saveas(PSIfig,[SID '_fig.fig']);
-% cd(backupdir);
-% save([SID '_data'], 'alpha_EV', 'beta_EV', 'AllStarts', 'AllStims', 'AllResponses', 'BinaryResponses', 'elapsedTime', 'PhaseStart', 'BslDiff', 'StartSpeeds', 'StimSpeeds');
+%Save data
+cd(datadir);
+save([SID '_data'], 'alpha_EV', 'beta_EV', 'AllStarts', 'AllStims', 'AllResponses', 'BinaryResponses', 'elapsedTime', 'PhaseStart', 'BslDiff');
+saveas(PSIfig,[SID '_fig.fig']);
+cd(backupdir);
+save([SID '_data'], 'alpha_EV', 'beta_EV', 'AllStarts', 'AllStims', 'AllResponses', 'BinaryResponses', 'elapsedTime', 'PhaseStart', 'BslDiff');
 

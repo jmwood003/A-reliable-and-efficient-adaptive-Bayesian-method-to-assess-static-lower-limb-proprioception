@@ -1,11 +1,11 @@
-function [alpha_EV, beta_EV, AllStarts, AllStims, AllResponses, BinaryResponses] = ViconTMConnect_PSI(Ntrials, X, alpha_range, beta_range, pr_left_lookup, pr_right_lookup, TLstr, offset)
+function [alpha_EV, beta_EV, AllStarts, AllStims, AllResponses, BinaryResponses, StartSpeeds, StimSpeeds] = ViconTMConnect_PSI(Ntrials, X, alpha_range, beta_range, pr_left_lookup, pr_right_lookup, TLstr, offset)
 
 rng('shuffle');
 strtpos_sigma = 50;
 
 %Treadmill Speeds
 minspeed = 10;
-maxspeed = 30;
+maxspeed = 50;
 
 %Set the first round of start positions (changed every 10 trials)
 %If TBidx == 1, the start position is from the top, if 0, it is from
@@ -218,6 +218,7 @@ else
 end
 TMtestSpeed = 0;   
 TMrefSpeed = 0; 
+speed = round(minspeed + (maxspeed-minspeed)*rand);
 
 %Format treadmill input
 format=0;
@@ -455,7 +456,8 @@ while trial <= Ntrials
       
       disp(['Trial # ' num2str(trial) ':']);
       disp(['Start pos: ' num2str(startpos)]);
-     
+      StartSpeeds(trial) = speed; %Record the speed
+
       %Stop treadmill
       TMtestSpeed = 0;  
       %Format treadmill input
@@ -492,6 +494,7 @@ while trial <= Ntrials
   elseif MkrDiff == stimulus
        
       disp(['Stimulus: ' num2str(stimulus)]);
+      StimSpeeds(trial) = speed; %Record the speed
 
       %Stop treadmill
       TMtestSpeed = 0;  
@@ -637,7 +640,7 @@ while trial <= Ntrials
   else
       
       %Move treadmill
-      speed = round(minspeed + (maxspeed-minspeed)*rand);
+%       speed = round(minspeed + (maxspeed-minspeed)*rand);
       if startpos < MkrDiff || stimulus < MkrDiff
           TMtestSpeed = speed;
       else
