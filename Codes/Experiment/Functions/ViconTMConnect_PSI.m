@@ -207,17 +207,12 @@ Output_GetVersion = MyClient.GetVersion();
 
 %Set treadmill speed (Lets say for now the right leg is the reference
 %leg so we are only moving the left)
-if strcmp(TLstr,'Left')==1
-    accR = 1500;
-    accL = 1500;   
-elseif strcmp(TLstr,'Right')==1
-    accL = 1500;
-    accR = 1500;      
-else
-  error('Input must be Left or Right');
-end
+accR = 1500;
+accL = 1500;   
 TMtestSpeed = 0;   
 TMrefSpeed = 0; 
+
+%Set a random speed to start
 speed = round(minspeed + (maxspeed-minspeed)*rand);
 
 %Format treadmill input
@@ -332,8 +327,54 @@ trial = 1;
 alpha_EV = [];
 beta_EV = [];
 
-%Error button
-ErrorButton = uicontrol('Style','text','Position',[150 150 300 100],'String','none','FontSize',50,'BackgroundColor','r','KeyPressFcn',@pushbutton_callback);
+%User interface
+Fig = uifigure('Position',[150 150 650 700]);
+gl = uigridlayout(Fig,[3,3]);
+gl.RowHeight = {50,500,100};
+gl.ColumnWidth = {200,200,200};
+
+%Start position texts
+start_pos_label = uilabel(gl,'Text', 'Start Positions','FontSize',30);
+start_pos_label.Layout.Row = 1;
+start_pos_label.Layout.Column = 1;
+start_pos_text = uitextarea(gl,'FontSize',20);
+start_pos_text.Layout.Row = 2;
+start_pos_text.Layout.Column = 1;
+
+%Stimulus position texts
+stim_pos_label = uilabel(gl,'Text', 'Stim Positions','FontSize',30);
+stim_pos_label.Layout.Row = 1;
+stim_pos_label.Layout.Column = 2;
+stim_pos_text = uitextarea(gl,'FontSize',20);
+stim_pos_text.Layout.Row = 2;
+stim_pos_text.Layout.Column = 2;
+
+%Response texts
+resp_label = uilabel(gl,'Text', '   Responses','FontSize',30);
+resp_label.Layout.Row = 1;
+resp_label.Layout.Column = 3;
+resp_text = uitextarea(gl,'FontSize',20);
+resp_text.Layout.Row = 2;
+resp_text.Layout.Column = 3;
+
+R_btn = uibutton(gl,'BackgroundColor','g','Text','Left','FontSize',50,'ButtonPushedFcn',{@left_callback,AllResponses});
+R_btn.Layout.Row = 3;
+R_btn.Layout.Column = 1;
+
+L_btn = uibutton(gl,'BackgroundColor','g','Text','Right','FontSize',50,'ButtonPushedFcn',{@right_callback});
+L_btn.Layout.Row = 3;
+L_btn.Layout.Column = 2;
+
+L_btn = uibutton(gl,'BackgroundColor','r','Text','Error!','FontSize',50,'ButtonPushedFcn',{@error_callback,trial,response});
+L_btn.Layout.Row = 3;
+L_btn.Layout.Column = 3;
+
+start_pos_text.Value = sprintf('%d \n',AllStarts);
+scroll(start_pos_text,'bottom');
+stim_pos_text.Value = sprintf('%d \n',AllStims);
+scroll(stim_pos_text,'bottom');
+
+AllResponses
 
 % Loop until the message box is dismissed
 while trial <= Ntrials
@@ -534,7 +575,6 @@ while trial <= Ntrials
       if trial == 1
           response = input(['Re-enter response: '],'s');
       end
-      AllResponses{trial} = response;
       
       %Convert the resoponse to a binary response (probability of left)
       if strcmp(response,'l')==1
@@ -545,8 +585,7 @@ while trial <= Ntrials
           fullstr = 'right';          
       end
 
-      %Edit the current response
-      ErrorButton.String = fullstr;
+      AllResponses{trial} = fullstr;
       
             
       %Go back to stand normally prompt
@@ -650,6 +689,9 @@ while trial <= Ntrials
           startpos = round(normrnd(AllStims(trial),strtpos_sigma));
       end
       AllStarts(trial) = startpos;
+
+      %Update the GUI
+      start_pos_text.Value = sprintf('%d \n',AllStarts);
 
       disp(' ');
   else
