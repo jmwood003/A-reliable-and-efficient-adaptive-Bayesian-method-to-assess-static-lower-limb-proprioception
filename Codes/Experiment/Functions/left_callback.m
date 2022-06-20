@@ -1,10 +1,12 @@
-function response = left_callback(src,event,AllResponses)
+function response = left_callback(src,event)
 
-% disp('Response = Left');
-% response = 'l';
-% AllResponses{trial} = 'l';
-% % keyboard;
-fig = ancestor(src,'figure','toplevel')
-fig.resp_text.Value = AllResponses
-% fig.UserData
+Fig = ancestor(src,"figure","toplevel");
+Responses = Fig.UserData.Resp_Text.Value;
+trials = Fig.UserData.Trials.Value;
+
+current_trial = str2num(trials{end});
+Responses{current_trial} = 'left';
+
+Fig.UserData.Resp_Text.Value = Responses;
+
 end

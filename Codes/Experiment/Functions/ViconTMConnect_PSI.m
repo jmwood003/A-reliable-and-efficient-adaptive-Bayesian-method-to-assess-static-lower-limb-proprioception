@@ -323,58 +323,68 @@ Frame = -1;
 SkippedFrames = [];
 Counter = 1;
 tStart = tic;
-trial = 1; 
+trial = 1;
 alpha_EV = [];
 beta_EV = [];
+AllResponses = [];
 
 %User interface
 Fig = uifigure('Position',[150 150 650 700]);
-gl = uigridlayout(Fig,[3,3]);
+gl = uigridlayout(Fig,[3,4]);
 gl.RowHeight = {50,500,100};
-gl.ColumnWidth = {200,200,200};
+gl.ColumnWidth = {50,150,150,150};
+
+%Trial numbers
+trial_label = uilabel(gl,'Text', 'Trial','FontSize',25);
+trial_label.Layout.Row = 1;
+trial_label.Layout.Column = 1;
+trial_text = uitextarea(gl,'FontSize',20,'BackgroundColor',[0.8,0.8,0.8]);
+trial_text.Layout.Row = 2;
+trial_text.Layout.Column = 1;
 
 %Start position texts
 start_pos_label = uilabel(gl,'Text', 'Start Positions','FontSize',30);
 start_pos_label.Layout.Row = 1;
-start_pos_label.Layout.Column = 1;
+start_pos_label.Layout.Column = 2;
 start_pos_text = uitextarea(gl,'FontSize',20);
 start_pos_text.Layout.Row = 2;
-start_pos_text.Layout.Column = 1;
+start_pos_text.Layout.Column = 2;
 
 %Stimulus position texts
 stim_pos_label = uilabel(gl,'Text', 'Stim Positions','FontSize',30);
 stim_pos_label.Layout.Row = 1;
-stim_pos_label.Layout.Column = 2;
+stim_pos_label.Layout.Column = 3;
 stim_pos_text = uitextarea(gl,'FontSize',20);
 stim_pos_text.Layout.Row = 2;
-stim_pos_text.Layout.Column = 2;
+stim_pos_text.Layout.Column = 3;
 
 %Response texts
 resp_label = uilabel(gl,'Text', '   Responses','FontSize',30);
 resp_label.Layout.Row = 1;
-resp_label.Layout.Column = 3;
+resp_label.Layout.Column = 4;
 resp_text = uitextarea(gl,'FontSize',20);
 resp_text.Layout.Row = 2;
-resp_text.Layout.Column = 3;
+resp_text.Layout.Column = 4;
 
-R_btn = uibutton(gl,'BackgroundColor','g','Text','Left','FontSize',50,'ButtonPushedFcn',{@left_callback,AllResponses});
-R_btn.Layout.Row = 3;
-R_btn.Layout.Column = 1;
-
-L_btn = uibutton(gl,'BackgroundColor','g','Text','Right','FontSize',50,'ButtonPushedFcn',{@right_callback});
+%Buttons 
+L_btn = uibutton(gl,'BackgroundColor','g','Text','Left','FontSize',50,'ButtonPushedFcn',{@left_callback});
 L_btn.Layout.Row = 3;
 L_btn.Layout.Column = 2;
 
-L_btn = uibutton(gl,'BackgroundColor','r','Text','Error!','FontSize',50,'ButtonPushedFcn',{@error_callback,trial,response});
-L_btn.Layout.Row = 3;
-L_btn.Layout.Column = 3;
+R_btn = uibutton(gl,'BackgroundColor','g','Text','Right','FontSize',50,'ButtonPushedFcn',{@right_callback});
+R_btn.Layout.Row = 3;
+R_btn.Layout.Column = 3;
 
-start_pos_text.Value = sprintf('%d \n',AllStarts);
-scroll(start_pos_text,'bottom');
-stim_pos_text.Value = sprintf('%d \n',AllStims);
-scroll(stim_pos_text,'bottom');
+Err_btn = uibutton(gl,'BackgroundColor','r','Text','Error!','FontSize',50,'ButtonPushedFcn',{@error_callback});
+Err_btn.Layout.Row = 3;
+Err_btn.Layout.Column = 4;
 
-AllResponses
+TB = uitogglebutton(gl);
+TB.Layout.Row = 3;
+TB.Layout.Column = 1;
+
+Fig.UserData = struct("Resp_Text",resp_text,"Trials",trial_text);
+
 
 % Loop until the message box is dismissed
 while trial <= Ntrials
@@ -504,9 +514,16 @@ while trial <= Ntrials
   %Stops when the participant reaches the start position 
   if MkrDiff == startpos
       
-      disp(['Trial # ' num2str(trial) ':']);
-      disp(['Start pos: ' num2str(startpos)]);
+%       disp(['Trial # ' num2str(trial) ':']);
+%       disp(['Start pos: ' num2str(startpos)]);
       StartSpeeds(trial) = speed; %Record the speed
+      
+      AllTrials(trial) = trial; 
+
+      trial_text.Value = sprintf('%d \n',AllTrials);
+      scroll(trial_text,'bottom');      
+      start_pos_text.Value = sprintf('%d \n',AllStarts);
+      scroll(start_pos_text,'bottom');
 
       %Stop treadmill
       TMtestSpeed = 0;  
@@ -539,12 +556,15 @@ while trial <= Ntrials
       else
           TMtestSpeed = -speed;
       end
-      
+          
   %Stops when the limb position equals the stimulus    
   elseif MkrDiff == stimulus
        
-      disp(['Stimulus: ' num2str(stimulus)]);
+%       disp(['Stimulus: ' num2str(stimulus)]);
       StimSpeeds(trial) = speed; %Record the speed
+
+      stim_pos_text.Value = sprintf('%d \n', AllStims);
+      scroll(stim_pos_text,'bottom');
 
       %Stop treadmill
       TMtestSpeed = 0;  
@@ -567,6 +587,8 @@ while trial <= Ntrials
       LB.Visible = 'on';
       RB.Visible = 'on';
       
+      response = Fig.UserData.Resp_Text.Value{end};
+
       response = input(['Response (r or l)?'],'s');
       while strcmp(response,'r')==0 && strcmp(response,'l')==0
           disp('incorrect response entered');
@@ -577,17 +599,16 @@ while trial <= Ntrials
       end
       
       %Convert the resoponse to a binary response (probability of left)
-      if strcmp(response,'l')==1
+      if strcmp(response,'left')==1
           BinaryResponses(trial) = 1;
           fullstr = 'left';
-      elseif strcmp(response,'r')==1
+      elseif strcmp(response,'right')==1
           BinaryResponses(trial) = 0;
           fullstr = 'right';          
       end
 
       AllResponses{trial} = fullstr;
       
-            
       %Go back to stand normally prompt
       normlbl.Visible = 'off';
       choicelbl.Visible = 'off';
