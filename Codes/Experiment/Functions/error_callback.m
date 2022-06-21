@@ -2,7 +2,9 @@ function error_callback(src,event)
 
 Fig = ancestor(src,"figure","toplevel");
 Fig.UserData.Switch.Value = 'Stop';
-Fig.UderData.Message.Value = 'Error!';
+Fig.UserData.Message.Value = 'Error!';
+
+inputdlg(prompt,dlgtitle,dims,definput,opts)
 
 uiwait(Fig);
 

@@ -388,7 +388,7 @@ Switch = uiswitch(gl,'toggle','Items', {'Go','Stop'}, 'ValueChangedFcn',@switchM
 Switch.Layout.Row = 4;
 Switch.Layout.Column = 1;
 
-Fig.UserData = struct("Resp_Text",resp_text,"Trials",trial_text, "Switch", Switch, "Message", message_text);
+Fig.UserData = struct("Resp_Text", resp_text, "Trials", trial_text, "Switch", Switch, "Message", message_text);
 message_text.Value = 'Moving to start position';
 
 % Loop until the message box is dismissed
@@ -562,7 +562,7 @@ while trial <= Ntrials
           TMtestSpeed = -speed;
       end
           
-      message_text.Value = 'Moving to stimulus position';
+      message_text.Value = ['Moving to stimulus position (speed=' num2str(speed) ')'];
 
   %Stops when the limb position equals the stimulus    
   elseif MkrDiff == stimulus
@@ -571,7 +571,7 @@ while trial <= Ntrials
       StimSpeeds(trial) = speed; %Record the speed
 
       stim_pos_text.Value = sprintf('%d \n', AllStims);
-      scroll(stim_pos_text,'bottom');
+%       scroll(stim_pos_text,'bottom');
 
       %Stop treadmill
       TMtestSpeed = 0;  
@@ -600,8 +600,6 @@ while trial <= Ntrials
       Switch.Value = 'Stop';
       uiwait(Fig);
       
-      response = Fig.UserData.Resp_Text.Value{end};
-
 %       response = input(['Response (r or l)?'],'s');
 %       while strcmp(response,'r')==0 && strcmp(response,'l')==0
 %           disp('incorrect response entered');
@@ -610,17 +608,16 @@ while trial <= Ntrials
 %       if trial == 1
 %           response = input(['Re-enter response: '],'s');
 %       end
+
+      response = Fig.UserData.Resp_Text.Value{end};
+      AllResponses{trial} = response;
       
       %Convert the resoponse to a binary response (probability of left)
       if strcmp(response,'left')==1
           BinaryResponses(trial) = 1;
-          fullstr = 'left';
       elseif strcmp(response,'right')==1
           BinaryResponses(trial) = 0;
-          fullstr = 'right';          
       end
-
-      AllResponses{trial} = fullstr;
       
       %Go back to stand normally prompt
       normlbl.Visible = 'off';
@@ -726,9 +723,8 @@ while trial <= Ntrials
       end
       AllStarts(trial) = startpos;
       
-      message_text.Value = 'Moving to start position';
+      message_text.Value = ['Moving to start position (speed=' num2str(speed) ')'];
 
-%       disp(' ');
   else
       
       %Move treadmill
