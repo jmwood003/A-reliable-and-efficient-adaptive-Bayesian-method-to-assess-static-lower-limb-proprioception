@@ -300,24 +300,6 @@ RB = uibutton(SubjDisp,'Position',[800 200 300 200],'FontSize',75,'BackgroundCol
 RB.Text = 'Right';
 RB.Visible = 'off'; 
 
-%User interface for force plates
-ForceDisp = uifigure('Name','Forces','Position',[400 300 500 500]);
-FGtitle = uilabel(ForceDisp, 'Position',[175 350 300 200], 'FontSize',30);
-FGtitle.Text = 'Force Ratio';
-FG = uigauge(ForceDisp, 'semicircular', 'Position',[100 250 300 300],'Limits',[50 150]);
-FG.ScaleColors = {'red','yellow','green','yellow','red'};
-FG.ScaleColorLimits = [50 80; 80 90; 90 110; 110 120; 120 150];
-LFtext = uilabel(ForceDisp,'Position',[70 130 300 200], 'FontSize',15);
-LFtext.Text = {'Increased Left Forces'};
-RFtext = uilabel(ForceDisp,'Position',[300 130 300 200], 'FontSize',15);
-RFtext.Text = {'Increased Right Forces'};
-
-% ERRtitle = uilabel(ForceDisp, 'Position',[150 75 300 200], 'FontSize',30);
-% ERRtitle.Text = 'Response Error';
-% uicontrol(ForceDisp,'Style','pushbutton','Callback',@pushbutton_callback)
-% EB = uibutton(ForceDisp,'Position',[150 50 200 100],'FontSize',50,'BackgroundColor','r','Callback',@pushbutton_callback);
-% EB.Text = 'ERROR!';
-
 %Initialize pre-set parameters 
 Frame = -1;
 SkippedFrames = [];
@@ -329,13 +311,13 @@ beta_EV = [];
 AllResponses = [];
 
 %User interface
-Fig = uifigure('Position',[2000 0 560 650]);
-gl = uigridlayout(Fig,[4,4]);
-gl.RowHeight = {25,50,400,100};
+Fig = uifigure('Position',[2000 -90 560 850]);
+gl = uigridlayout(Fig,[5,4]);
+gl.RowHeight = {40,50,400,100, 200};
 gl.ColumnWidth = {50,150,150,150};
 
 %Message bar
-message_text = uitextarea(gl,'HorizontalAlignment','center');
+message_text = uitextarea(gl,'HorizontalAlignment','center','FontSize',25);
 message_text.Layout.Row = 1;
 message_text.Layout.Column = [1 4];
 
@@ -372,21 +354,29 @@ resp_text.Layout.Row = 3;
 resp_text.Layout.Column = 4;
 
 %Buttons 
-L_btn = uibutton(gl,'BackgroundColor','g','Text','Left','FontSize',50,'ButtonPushedFcn',{@left_callback});
+L_btn = uibutton(gl,'BackgroundColor','g','Text','Left','FontSize',50,'ButtonPushedFcn',@left_callback);
 L_btn.Layout.Row = 4;
 L_btn.Layout.Column = 2;
 
-R_btn = uibutton(gl,'BackgroundColor','g','Text','Right','FontSize',50,'ButtonPushedFcn',{@right_callback});
+R_btn = uibutton(gl,'BackgroundColor','g','Text','Right','FontSize',50,'ButtonPushedFcn',@right_callback);
 R_btn.Layout.Row = 4;
 R_btn.Layout.Column = 3;
 
-Err_btn = uibutton(gl,'BackgroundColor','r','Text','Error!','FontSize',50,'ButtonPushedFcn',{@error_callback});
+Err_btn = uibutton(gl,'BackgroundColor','r','Text','Error!','FontSize',50,'ButtonPushedFcn',{@error_callback,t});
 Err_btn.Layout.Row = 4;
 Err_btn.Layout.Column = 4;
 
 Switch = uiswitch(gl,'toggle','Items', {'Go','Stop'}, 'ValueChangedFcn',@switchMoved);
 Switch.Layout.Row = 4;
 Switch.Layout.Column = 1;
+
+%Force ratio gauge 
+FGtitle = uilabel(Fig, 'Position',[230 100 300 200], 'FontSize',20, 'Text', 'Force Ratio');
+FG = uigauge(Fig, 'semicircular', 'Position',[130 10 300 300],'Limits',[50 150]);
+FG.ScaleColors = {'red','yellow','green','yellow','red'};
+FG.ScaleColorLimits = [50 80; 80 90; 90 110; 110 120; 120 150];
+LFtext = uilabel(Fig,'Position',[20 0 300 200], 'FontSize',15, 'Text','Left too high');
+RFtext = uilabel(Fig,'Position',[450 0 300 200], 'FontSize',15,'Text','Right too high');
 
 Fig.UserData = struct("Resp_Text", resp_text, "Trials", trial_text, "Switch", Switch, "Message", message_text);
 message_text.Value = 'Moving to start position';
@@ -519,14 +509,11 @@ while trial <= Ntrials
   %Stops when the participant reaches the start position 
   if MkrDiff == startpos
       
-%       disp(['Trial # ' num2str(trial) ':']);
-%       disp(['Start pos: ' num2str(startpos)]);
       StartSpeeds(trial) = speed; %Record the speed
-      
-      AllTrials(trial) = trial; 
+      AllTrials(trial) = trial; %and the trial
 
       trial_text.Value = sprintf('%d \n',AllTrials);
-      scroll(trial_text,'bottom');      
+%       scroll(trial_text,'bottom');      
       start_pos_text.Value = sprintf('%d \n',AllStarts);
 %       scroll(start_pos_text,'bottom');
 
@@ -666,10 +653,12 @@ while trial <= Ntrials
           break
       elseif trial == 26 %Break at 25 
           message_text.Value = '25 trial break. Flip switch to continue';
+          message_text.BackgroundColor = 'c';
           Switch.Value = 'Stop';
           uiwait(Fig);
       elseif trial==51 %Break at 50 
           message_text.Value = '50 trial break. Flip switch to continue';
+          message_text.BackgroundColor = 'c';          
           Switch.Value = 'Stop';          
           uiwait(Fig);
       end
@@ -728,7 +717,6 @@ while trial <= Ntrials
   else
       
       %Move treadmill
-%       speed = round(minspeed + (maxspeed-minspeed)*rand);
       if startpos < MkrDiff || stimulus < MkrDiff
           TMtestSpeed = speed;
       else

@@ -2,7 +2,7 @@
 close all; clear all; clc; 
 
 %Subject ID
-SID = 'buttonstest'; 
+SID = 'PSItest_24b'; 
 %Set test limb (moving limb)
 TestLimb = 'Left';
 %Number of trials
@@ -108,10 +108,10 @@ title('Estimate');
 xlim([-100 100]); ylim([0 1]);
 set(gca,'FontName','Ariel','FontSize',15);
 
-% %Save data
-% cd(datadir);
-% save([SID '_data'], 'alpha_EV', 'beta_EV', 'AllStarts', 'AllStims', 'AllResponses', 'BinaryResponses', 'elapsedTime', 'PhaseStart', 'BslDiff', 'StartSpeeds', 'StimSpeeds');
-% saveas(PSIfig,[SID '_fig.fig']);
-% cd(backupdir);
-% save([SID '_data'], 'alpha_EV', 'beta_EV', 'AllStarts', 'AllStims', 'AllResponses', 'BinaryResponses', 'elapsedTime', 'PhaseStart', 'BslDiff', 'StartSpeeds', 'StimSpeeds');
+%Save data
+cd(datadir);
+save([SID '_data'], 'alpha_EV', 'beta_EV', 'AllStarts', 'AllStims', 'AllResponses', 'BinaryResponses', 'elapsedTime', 'PhaseStart', 'BslDiff', 'StartSpeeds', 'StimSpeeds');
+saveas(PSIfig,[SID '_fig.fig']);
+cd(backupdir);
+save([SID '_data'], 'alpha_EV', 'beta_EV', 'AllStarts', 'AllStims', 'AllResponses', 'BinaryResponses', 'elapsedTime', 'PhaseStart', 'BslDiff', 'StartSpeeds', 'StimSpeeds');
 

@@ -9,8 +9,8 @@ Responses{current_trial} = 'left';
 
 Fig.UserData.Resp_Text.Value = Responses;
 
-uiresume(Fig);
-
 Fig.UserData.Switch.Value = 'Go';
+
+uiresume(Fig);
 
 end
