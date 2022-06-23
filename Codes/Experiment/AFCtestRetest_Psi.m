@@ -2,11 +2,12 @@
 close all; clear all; clc; 
 
 %Subject ID
-SID = 'PSItest_24b'; 
+SID = 'jontest'; 
 %Set test limb (moving limb)
 TestLimb = 'Left';
 %Number of trials
 Ntrials = 75;
+savestr = 'no';
 
 %Set paths and directories 
 addpath('C:\Users\Lab Account\Documents\GitHub\Split-Belt-AFC-Reliability\Codes\Experiment');
@@ -109,9 +110,10 @@ xlim([-100 100]); ylim([0 1]);
 set(gca,'FontName','Ariel','FontSize',15);
 
 %Save data
-cd(datadir);
-save([SID '_data'], 'alpha_EV', 'beta_EV', 'AllStarts', 'AllStims', 'AllResponses', 'BinaryResponses', 'elapsedTime', 'PhaseStart', 'BslDiff', 'StartSpeeds', 'StimSpeeds');
-saveas(PSIfig,[SID '_fig.fig']);
-cd(backupdir);
-save([SID '_data'], 'alpha_EV', 'beta_EV', 'AllStarts', 'AllStims', 'AllResponses', 'BinaryResponses', 'elapsedTime', 'PhaseStart', 'BslDiff', 'StartSpeeds', 'StimSpeeds');
-
+if strcmp(savestr,'yes')==1
+    cd(datadir);
+    save([SID '_data'], 'alpha_EV', 'beta_EV', 'AllStarts', 'AllStims', 'AllResponses', 'BinaryResponses', 'elapsedTime', 'PhaseStart', 'BslDiff', 'StartSpeeds', 'StimSpeeds');
+    saveas(PSIfig,[SID '_fig.fig']);
+    cd(backupdir);
+    save([SID '_data'], 'alpha_EV', 'beta_EV', 'AllStarts', 'AllStims', 'AllResponses', 'BinaryResponses', 'elapsedTime', 'PhaseStart', 'BslDiff', 'StartSpeeds', 'StimSpeeds');
+end

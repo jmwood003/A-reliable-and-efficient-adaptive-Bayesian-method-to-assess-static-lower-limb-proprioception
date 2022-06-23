@@ -8,6 +8,7 @@ current_trial = str2num(trials{end});
 Responses{current_trial} = 'left';
 
 Fig.UserData.Resp_Text.Value = Responses;
+scroll(Fig.UserData.Resp_Text,'bottom');
 
 Fig.UserData.Switch.Value = 'Go';
 
