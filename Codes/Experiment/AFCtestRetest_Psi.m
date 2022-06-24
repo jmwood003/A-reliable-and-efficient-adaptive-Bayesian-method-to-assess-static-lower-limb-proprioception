@@ -2,12 +2,12 @@
 close all; clear all; clc; 
 
 %Subject ID
-SID = 'jontest'; 
+SID = 'PSItest_26b'; 
 %Set test limb (moving limb)
 TestLimb = 'Left';
 %Number of trials
 Ntrials = 75;
-savestr = 'no';
+savestr = 'yes';
 
 %Set paths and directories 
 addpath('C:\Users\Lab Account\Documents\GitHub\Split-Belt-AFC-Reliability\Codes\Experiment');

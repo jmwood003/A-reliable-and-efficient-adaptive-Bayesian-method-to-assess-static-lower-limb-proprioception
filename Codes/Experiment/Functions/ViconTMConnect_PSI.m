@@ -260,10 +260,10 @@ RB.Text = 'Right';
 RB.Visible = 'off'; 
 
 %User interface
-Fig = uifigure('Position',[2000 -90 700 850],'Name','Experimenter Interface');
+Fig = uifigure('Position',[2500 -90 700 850],'Name','Experimenter Interface');
 gl = uigridlayout(Fig,[5,5]);
 gl.RowHeight = {40,50,400,100,200};
-gl.ColumnWidth = {60,150,150,150,50};
+gl.ColumnWidth = {60,150,150,150,70};
 
 %Message bar
 message_text = uitextarea(gl,'HorizontalAlignment','center','FontSize',25);
@@ -315,7 +315,7 @@ Err_btn = uibutton(gl,'BackgroundColor','r','Text','Error!','FontSize',50,'Butto
 Err_btn.Layout.Row = 4;
 Err_btn.Layout.Column = 4;
 
-Switch = uiswitch(gl,'toggle','Items', {'Go','Stop'}, 'ValueChangedFcn',@switchMoved);
+Switch = uiswitch(gl,'rocker','Items', {'Go','Stop'}, 'ValueChangedFcn',{@switchMoved, t});
 Switch.Layout.Row = 4;
 Switch.Layout.Column = 1;
 
@@ -328,8 +328,11 @@ uilabel(Fig,'Position',[70 0 300 200], 'FontSize',15, 'Text','Left too high');
 uilabel(Fig,'Position',[450 0 300 200], 'FontSize',15,'Text','Right too high');
 
 %Position slider
+stim_pos_label = uilabel(gl,'Text', {'Live'; 'Pos.'},'FontSize',20);
+stim_pos_label.Layout.Row = 2;
+stim_pos_label.Layout.Column = 5;
 Pos_slide = uislider(gl,'Orientation','vertical','Limits',[-300 300],'MajorTicks',[-300:50:300]);
-Pos_slide.Layout.Row = [2 5];
+Pos_slide.Layout.Row = [3 5];
 Pos_slide.Layout.Column = 5;
 
 Fig.UserData = struct("Resp_Text", resp_text, "Trials", trial_text, "Switch", Switch, "Message", message_text, "Stims",stim_pos_text, "Starts", start_pos_text, "Position", Pos_slide);
@@ -406,6 +409,7 @@ StartSpeeds = [];
 StimSpeeds = [];
 
 %Update the display
+All_trial_nums(1) = trial;
 trial_text.Value = sprintf('%d \n',trial);
 start_pos_text.Value = sprintf('%d \n',AllStarts);
 stim_pos_text.Value = sprintf('%d \n',AllStims);
@@ -670,7 +674,8 @@ while trial <= Ntrials
 %       AllResponses{trial} = response;
 
       AllResponses = Fig.UserData.Resp_Text.Value;
-      
+      AllResponses = AllResponses(1:end-1);
+
       %Convert the resoponse to a binary response (probability of left)
       BinaryResponses = contains(AllResponses,'left');
 
@@ -724,6 +729,7 @@ while trial <= Ntrials
       trial = str2double(Fig.UserData.Trials.Value{end}) + 1;
       All_trial_nums(trial) = trial; 
       trial_text.Value = sprintf('%d \n', All_trial_nums);
+      scroll(trial_text,'bottom');
 
       %Pause the test if at the breakpoints
       if trial > Ntrials
@@ -792,7 +798,10 @@ while trial <= Ntrials
         
       %Update the display
       start_pos_text.Value = sprintf('%d \n',AllStarts);
+      scroll(start_pos_text,'bottom');
+
       stim_pos_text.Value = sprintf('%d \n',AllStims);
+      scroll(stim_pos_text,'bottom');
 
       %Move treadmill to new stimulus position   
       speed = round(minspeed + (maxspeed-minspeed)*rand);
@@ -816,46 +825,30 @@ while trial <= Ntrials
       Payload=[format actualData' secCheck' padding];
       fwrite(t,Payload,'uint8');
 
-      else
-% 
-%       %Move treadmill to new stimulus position   
-%       speed = round(minspeed + (maxspeed-minspeed)*rand);
-%       if startpos < MkrDiff
-%           TMtestSpeed = speed;
-%       else
-%           TMtestSpeed = -speed;
-%       end
-          
-
-
-  end
+  elseif MkrDiff >= 250 || MkrDiff <= 250
   
-  %Format treadmill input
-  if strcmp(TLstr,'Left')==1
-    aux=int16toBytes([TMrefSpeed TMtestSpeed speedRR speedLL accR accL accRR accLL incline]);      
-  elseif strcmp(TLstr,'Right')==1
-     aux=int16toBytes([TMtestSpeed TMrefSpeed speedRR speedLL accR accL accRR accLL incline]);      
-  end
-  actualData=reshape(aux',size(aux,1)*2,1);
-  secCheck=255-actualData; %Redundant data to avoid errors in comm
-  padding=zeros(1,27);
-  %Set speeds
-  Payload=[format actualData' secCheck' padding];
-  fwrite(t,Payload,'uint8');
+      %Move treadmill to new stimulus position   
+      if startpos < MkrDiff || stimulus < MkrDiff
+          TMtestSpeed = speed;
+      else
+          TMtestSpeed = -speed;
+      end
 
-%   %Format treadmill input
-%   if strcmp(TLstr,'Left')==1
-%       aux=int16toBytes([TMrefSpeed TMtestSpeed speedRR speedLL accR accL accRR accLL incline]);      
-%   elseif strcmp(TLstr,'Right')==1
-%       aux=int16toBytes([TMtestSpeed TMrefSpeed speedRR speedLL accR accL accRR accLL incline]);      
-%   end
-%   actualData=reshape(aux',size(aux,1)*2,1);
-%   secCheck=255-actualData; %Redundant data to avoid errors in comm
-%   padding=zeros(1,27);
-%   %Set speeds
-%   Payload=[format actualData' secCheck' padding];
-%   fwrite(t,Payload,'uint8');
-   
+      %Format treadmill input
+      if strcmp(TLstr,'Left')==1
+        aux=int16toBytes([TMrefSpeed TMtestSpeed speedRR speedLL accR accL accRR accLL incline]);      
+      elseif strcmp(TLstr,'Right')==1
+         aux=int16toBytes([TMtestSpeed TMrefSpeed speedRR speedLL accR accL accRR accLL incline]);      
+      end
+      actualData=reshape(aux',size(aux,1)*2,1);
+      secCheck=255-actualData; %Redundant data to avoid errors in comm
+      padding=zeros(1,27);
+      %Set speeds
+      Payload=[format actualData' secCheck' padding];
+      fwrite(t,Payload,'uint8');
+
+  end 
+
 end% while true  
 
 %--------------------------------------------------------------------------
