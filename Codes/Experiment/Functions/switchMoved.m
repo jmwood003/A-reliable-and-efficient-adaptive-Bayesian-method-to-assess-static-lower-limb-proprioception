@@ -1,4 +1,4 @@
-function switchMoved(src,event, t)
+function switchMoved(src,event, t, TLstr)
 
 %Treadmill Speeds
 minspeed = 10;

@@ -1,5 +1,8 @@
 function ViconTMConnect_Psi_orientation(TLstr)
 
+minspeed = 10;
+maxspeed = 50;
+
 AllStarts = [-60, 60];
 AllStims = [-100, 100];
 
@@ -270,7 +273,7 @@ R_btn = uibutton(gl,'BackgroundColor','g','Text','Right','FontSize',50,'ButtonPu
 R_btn.Layout.Row = 4;
 R_btn.Layout.Column = 3;
 
-Err_btn = uibutton(gl,'BackgroundColor','r','Text','Error!','FontSize',50,'ButtonPushedFcn',{@error_callback, t, alpha_range, beta_range, prior, extreme_trials, iqr_trials, X, pr_left_lookup, pr_right_lookup, strtpos_sigma, TBidx, TLstr});
+Err_btn = uibutton(gl,'BackgroundColor','r','Text','Error!','FontSize',50);
 Err_btn.Layout.Row = 4;
 Err_btn.Layout.Column = 4;
 
@@ -334,7 +337,7 @@ start_pos_text.Value = sprintf('%d \n',AllStarts);
 stim_pos_text.Value = sprintf('%d \n',AllStims);
 
 % Loop until the message box is dismissed
-while trial <= Ntrials
+while trial <= 2
 
   drawnow limitrate;
   Counter = Counter + 1;
@@ -564,7 +567,7 @@ while trial <= Ntrials
       trial_text.Value = sprintf('%d \n', All_trial_nums);
 
       %Pause the test if at the breakpoints
-      if trial > Ntrials
+      if trial > 2
           break
       end
 
@@ -621,7 +624,6 @@ while trial <= Ntrials
   end 
 
     %Move treadmill to the start position position   
-    speed = round(minspeed + (maxspeed-minspeed)*rand);
     message_text.Value = ['Moving to start position (speed=' num2str(speed) ')'];
     if startpos <= MkrDiff || stimulus <= MkrDiff
       TMtestSpeed = speed;
@@ -656,10 +658,13 @@ end% while true
 %--------------------------------------------------------------------------
 %--------------------------------------------------------------------------
 %--------------------------------------------------------------------------
-close(SubjDisp)
+close(SubjDisp);
+delete(SubjDisp);
 
-fclose(t);
-delete(t);
+close(Fig);
+delete(Fig);
+
+clear t;
 
 % %Disconnect from Vicon
 % fprintf( 'Time Elapsed: %d\n', tEnd );

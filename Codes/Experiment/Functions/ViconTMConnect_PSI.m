@@ -315,7 +315,7 @@ Err_btn = uibutton(gl,'BackgroundColor','r','Text','Error!','FontSize',50,'Butto
 Err_btn.Layout.Row = 4;
 Err_btn.Layout.Column = 4;
 
-Switch = uiswitch(gl,'rocker','Items', {'Go','Stop'}, 'ValueChangedFcn',{@switchMoved, t});
+Switch = uiswitch(gl,'rocker','Items', {'Go','Stop'}, 'ValueChangedFcn',{@switchMoved, t, TLstr});
 Switch.Layout.Row = 4;
 Switch.Layout.Column = 1;
 
@@ -380,20 +380,20 @@ end
 
 %find the simulus that minimizes entropy
 [~,minH_idx] = min(EH);
-stimulus = X(minH_idx);
-AllStims(1) = stimulus;
+AllStims(1) = X(minH_idx);
+% AllStims(1) = stimulus;
 
 %Get a start position and record in a different variable
-startpos = round(normrnd(stimulus,strtpos_sigma));
-while TBidx(1)==1 && startpos <= stimulus %This means that the start position should be above but it is below
-    startpos = round(normrnd(stimulus,strtpos_sigma));
+startpos = round(normrnd(AllStims(1),strtpos_sigma));
+while TBidx(1)==1 && startpos <= AllStims(1) %This means that the start position should be above but it is below
+    startpos = round(normrnd(AllStims(1),strtpos_sigma));
 end
-while TBidx(1)==0 && startpos >= stimulus %This means that the start position should be below but it is above
-    startpos = round(normrnd(stimulus,strtpos_sigma));
+while TBidx(1)==0 && startpos >= AllStims(1) %This means that the start position should be below but it is above
+    startpos = round(normrnd(AllStims(1),strtpos_sigma));
 end
 AllStarts(1) = startpos;
 
-stimulus = nan; %Need the stimulus to be nan at first so the first treadmill first stops at the start position 
+% stimulus = nan; %Need the stimulus to be nan at first so the first treadmill first stops at the start position 
 
 %Initialize pre-set parameters 
 Frame = -1;
@@ -412,12 +412,12 @@ StimSpeeds = [];
 All_trial_nums(1) = trial;
 trial_text.Value = sprintf('%d \n',trial);
 start_pos_text.Value = sprintf('%d \n',AllStarts);
-stim_pos_text.Value = sprintf('%d \n',AllStims);
+stim_pos_text.Value = sprintf('%d \n',nan);
 
 %Move treadmill to the start position position   
 speed = round(minspeed + (maxspeed-minspeed)*rand);
 message_text.Value = ['Moving to start position (speed=' num2str(speed) ')'];
-if startpos <= offset
+if str2double(start_pos_text.Value{end}) <= offset
   TMtestSpeed = speed;
 else
   TMtestSpeed = -speed;
@@ -565,9 +565,10 @@ while trial <= Ntrials
   %------------------------------------------------------------------------
   
   %Stops when the participant reaches the start position 
-  if MkrDiff == startpos
+  if MkrDiff == str2double(start_pos_text.Value{end})
       
       StartSpeeds(trial) = speed; %Record the speed
+      Pos_slide.Value = MkrDiff;
 
 %       start_pos_text.Value = sprintf('%d \n',AllStarts);
 %       scroll(start_pos_text,'bottom');
@@ -590,9 +591,16 @@ while trial <= Ntrials
       fwrite(t,Payload,'uint8');
 
       %Set start and stimulus positions
-      startpos = nan; %reset so it only moves to stim position
+%       startpos = nan; %reset so it only moves to stim position
+      AllStarts(end+1) = nan;
+      start_pos_text.Value = sprintf('%d \n',AllStarts);
+      AllStims(isnan(AllStims)==1) = [];
+      stim_pos_text.Value = sprintf('%d \n',AllStims);
+      scroll(start_pos_text,'bottom');
+      scroll(stim_pos_text,'bottom');
+
 %       stimulus = AllStims(trial);
-      stimulus = str2double(stim_pos_text.Value{trial});
+%       stimulus = str2double(stim_pos_text.Value{end});
 
       %Pause for a random time period from 0-2 seconds 
       pause(2*rand(1));
@@ -600,7 +608,7 @@ while trial <= Ntrials
       %Move treadmill to new stimulus position   
       speed = round(minspeed + (maxspeed-minspeed)*rand);
       message_text.Value = ['Moving to stimulus position (speed=' num2str(speed) ')'];
-      if stimulus <= MkrDiff
+      if str2double(stim_pos_text.Value{end}) <= MkrDiff
           TMtestSpeed = speed;
       else
           TMtestSpeed = -speed;
@@ -620,9 +628,10 @@ while trial <= Ntrials
       fwrite(t,Payload,'uint8');
 
   %Stops when the limb position equals the stimulus    
-  elseif MkrDiff == stimulus
+  elseif MkrDiff == str2double(stim_pos_text.Value{end})
        
       StimSpeeds(trial) = speed; %Record the speed
+      Pos_slide.Value = MkrDiff;
 
 %       stim_pos_text.Value = sprintf('%d \n', AllStims);
 %       scroll(stim_pos_text,'bottom');
@@ -722,10 +731,11 @@ while trial <= Ntrials
       %The posterior becomes the prior
       prior = posterior;
       
-      %Reset stimulus position
-      stimulus = nan;
-      
-      %Move to the next trial
+%       %Move to the next trial
+%       if str2double(Fig.UserData.Trials.Value{end}) ~= length(Fig.UserData.Resp_Text.Value)
+%           
+%           continue
+%       end
       trial = str2double(Fig.UserData.Trials.Value{end}) + 1;
       All_trial_nums(trial) = trial; 
       trial_text.Value = sprintf('%d \n', All_trial_nums);
@@ -795,18 +805,30 @@ while trial <= Ntrials
           startpos = round(normrnd(AllStims(trial),strtpos_sigma));
       end
       AllStarts(trial) = startpos;
-        
-      %Update the display
+
+      %Update the start and end positoins
+
+      %Reset stimulus position
+%       AllStims(end+1) = nan;
+      stim_pos_text.Value = sprintf('%d \n',[AllStims(1:end-1) nan]);
       start_pos_text.Value = sprintf('%d \n',AllStarts);
       scroll(start_pos_text,'bottom');
-
-      stim_pos_text.Value = sprintf('%d \n',AllStims);
       scroll(stim_pos_text,'bottom');
+
+%       stimulus = nan;      
+
+% 
+%       %Update the display
+%       start_pos_text.Value = sprintf('%d \n',AllStarts);
+%       scroll(start_pos_text,'bottom');
+% 
+%       stim_pos_text.Value = sprintf('%d \n',AllStims);
+%       scroll(stim_pos_text,'bottom');
 
       %Move treadmill to new stimulus position   
       speed = round(minspeed + (maxspeed-minspeed)*rand);
       message_text.Value = ['Moving to start position (speed=' num2str(speed) ')'];
-      if startpos <= MkrDiff
+      if str2double(start_pos_text.Value{end}) <= MkrDiff
           TMtestSpeed = speed;
       else
           TMtestSpeed = -speed;
@@ -825,10 +847,10 @@ while trial <= Ntrials
       Payload=[format actualData' secCheck' padding];
       fwrite(t,Payload,'uint8');
 
-  elseif MkrDiff >= 250 || MkrDiff <= 250
+  elseif MkrDiff >= 250 || MkrDiff <= -250
   
       %Move treadmill to new stimulus position   
-      if startpos < MkrDiff || stimulus < MkrDiff
+      if str2double(start_pos_text.Value{end}) < MkrDiff || str2double(stim_pos_text.Value{end}) < MkrDiff
           TMtestSpeed = speed;
       else
           TMtestSpeed = -speed;
@@ -862,10 +884,13 @@ end% while true
 %--------------------------------------------------------------------------
 %--------------------------------------------------------------------------
 %--------------------------------------------------------------------------
-close(SubjDisp)
+close(SubjDisp);
+delete(SubjDisp);
 
-fclose(t);
-delete(t);
+close(Fig);
+delete(Fig);
+
+clear t;
 
 % %Disconnect from Vicon
 % fprintf( 'Time Elapsed: %d\n', tEnd );

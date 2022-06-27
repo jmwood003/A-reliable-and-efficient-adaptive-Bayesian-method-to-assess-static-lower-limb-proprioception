@@ -40,16 +40,6 @@ elseif strcmp(Error_response,'right')==1
     Fig.UserData.Resp_Text.Value{error_trial} = 'left';
 end
 
-%Index the next stimulus and start position
-next_stim = str2double(Fig.UserData.Stims.Value{end});
-next_start = str2double(Fig.UserData.Starts.Value{end});
-
-%Delete data after the error
-Fig.UserData.Resp_Text.Value = Fig.UserData.Resp_Text.Value(1:error_trial); %Responses
-Fig.UserData.Stims.Value = Fig.UserData.Stims.Value(1:error_trial); %Stimulus positions
-Fig.UserData.Trials.Value = Fig.UserData.Trials.Value(1:error_trial); %Trials
-Fig.UserData.Starts.Value = Fig.UserData.Starts.Value(1:error_trial); %Start positions
-
 %Index all stimuli and start positions
 AllStims_str = Fig.UserData.Stims.Value;
 AllStarts_str = Fig.UserData.Starts.Value;
@@ -59,6 +49,21 @@ for i = 1:length(AllStims_str)
     AllStarts(i) = str2double(AllStarts_str{i});
     AllTrials(i) = str2double(AllTrials_str{i});
 end
+AllStarts(isnan(AllStarts)==1) = [];
+AllStims(isnan(AllStims)==1) = [];
+
+%Index the next stimulus and start position
+next_start = AllStarts(end);
+next_stim = AllStims(end);
+
+%Delete data after the error
+AllStims = AllStims(1:error_trial);
+AllStarts = AllStarts(1:error_trial);
+AllTrials = AllTrials(1:error_trial);
+Fig.UserData.Resp_Text.Value = Fig.UserData.Resp_Text.Value(1:error_trial); %Responses
+Fig.UserData.Stims.Value = Fig.UserData.Stims.Value(1:error_trial); %Stimulus positions
+Fig.UserData.Trials.Value = Fig.UserData.Trials.Value(1:error_trial); %Trials
+Fig.UserData.Starts.Value = Fig.UserData.Starts.Value(1:error_trial); %Start positions
 
 %Select a new stimulus position 
 %Before calculating the next trial, make sure it is not a preset trial
@@ -112,7 +117,6 @@ if ismember(next_trial,extreme_trials)==0 && ismember(next_trial,iqr_trials)==0
     
         EH(x) = (H_left*pr_left_x) + (H_right*pr_right_x);
     end
-    
     %Find the simulus that minimizes entropy
     [~,minH_idx] = min(EH);
     AllStims(next_trial) = X(minH_idx);
@@ -128,9 +132,9 @@ if ismember(next_trial,extreme_trials)==0 && ismember(next_trial,iqr_trials)==0
     AllStarts(next_trial) = startpos;
   
     %Update interface
-    AllTrials(next_trial) = AllTrials(end)+1;
+    AllTrials(next_trial) = next_trial;
     Fig.UserData.Trials.Value = sprintf('%d \n', AllTrials);
-    Fig.UserData.Stims.Value = sprintf('%d \n', AllStims);
+    Fig.UserData.Stims.Value = sprintf('%d \n', [AllStims, nan]);
     Fig.UserData.Starts.Value = sprintf('%d \n', AllStarts);  
 
 else
@@ -142,7 +146,7 @@ else
     %Update interface
     AllTrials(next_trial) = AllTrials(end)+1;
     Fig.UserData.Trials.Value = sprintf('%d \n', AllTrials);
-    Fig.UserData.Stims.Value = sprintf('%d \n', AllStims);
+    Fig.UserData.Stims.Value = sprintf('%d \n', [AllStims, nan]);
     Fig.UserData.Starts.Value = sprintf('%d \n', AllStarts);  
 
 end
@@ -155,17 +159,22 @@ MkrDiff = Fig.UserData.Position.Value;
 minspeed = 10;
 maxspeed = 50;
 speed = round(minspeed + (maxspeed-minspeed)*rand);
+
+%Update interface
+Fig.UserData.Message.BackgroundColor = 'white';
+Fig.UserData.Switch.Value = 'Go';              
 Fig.UserData.Message.Value = ['Moving to start position (speed=' num2str(speed) ')'];
+
 if startpos < MkrDiff
   TMtestSpeed = speed;
 else
   TMtestSpeed = -speed;
 end
 
-%Open treadmill communication 
-t=tcpclient('localhost',1000);
-set(t,'InputBufferSize',32,'OutputBufferSize',64);
-fopen(t);
+% %Open treadmill communication 
+% t=tcpclient('localhost',1000);
+% set(t,'InputBufferSize',32,'OutputBufferSize',64);
+% fopen(t);
 
 %Format treadmill input
 if strcmp(TLstr,'Left')==1
@@ -179,9 +188,5 @@ padding=zeros(1,27);
 %Set speeds
 Payload=[format actualData' secCheck' padding];
 fwrite(t,Payload,'uint8');
-
-%Update interface
-Fig.UserData.Message.BackgroundColor = 'white';
-Fig.UserData.Switch.Value = 'Go';              
 
 end
