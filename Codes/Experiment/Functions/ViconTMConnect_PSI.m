@@ -761,7 +761,7 @@ while trial <= Ntrials
           AllStims(trial) = extreme_stims(et_idx);
           et_idx = et_idx+1;
       elseif trial==iqr_trials(iqr_idx) %less extreme stimulus
-          addsub = [-40,-30,30,40];
+          addsub = [-40,-30,30,40]; %Change to plus or minus 
           potential_stims = round(alpha_EV(trial-1))+addsub; 
           new_stim = potential_stims(randi(length(potential_stims)));
           [~, stimidx] = min(abs(X-new_stim));

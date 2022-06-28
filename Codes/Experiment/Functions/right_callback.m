@@ -1,4 +1,4 @@
-function right_callback(src,event)
+function right_callback(src,event)  
 
 Fig = ancestor(src,"figure","toplevel");
 Responses = Fig.UserData.Resp_Text.Value;
