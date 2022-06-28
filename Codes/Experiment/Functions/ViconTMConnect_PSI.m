@@ -416,6 +416,7 @@ stim_pos_text.Value = sprintf('%d \n',nan);
 
 %Move treadmill to the start position position   
 speed = round(minspeed + (maxspeed-minspeed)*rand);
+StartSpeeds = speed; %Record the speed
 message_text.Value = ['Moving to start position (speed=' num2str(speed) ')'];
 if str2double(start_pos_text.Value{end}) <= offset
   TMtestSpeed = speed;
@@ -567,11 +568,12 @@ while trial <= Ntrials
   %Stops when the participant reaches the start position 
   if MkrDiff == str2double(start_pos_text.Value{end})
       
-      StartSpeeds(trial) = speed; %Record the speed
-      Pos_slide.Value = MkrDiff;
 
 %       start_pos_text.Value = sprintf('%d \n',AllStarts);
 %       scroll(start_pos_text,'bottom');
+%       if isnan(str2num(stim_pos_text.Value{end}))==1
+%           continue
+%       end
 
       %Stop treadmill
       TMtestSpeed = 0;  
@@ -590,11 +592,12 @@ while trial <= Ntrials
       Payload=[format actualData' secCheck' padding];
       fwrite(t,Payload,'uint8');
 
+      %Update the marker position slider
+      Pos_slide.Value = MkrDiff;
+
       %Set start and stimulus positions
 %       startpos = nan; %reset so it only moves to stim position
-      AllStarts(end+1) = nan;
-      start_pos_text.Value = sprintf('%d \n',AllStarts);
-      AllStims(isnan(AllStims)==1) = [];
+      start_pos_text.Value = sprintf('%d \n', [AllStarts, nan]);
       stim_pos_text.Value = sprintf('%d \n',AllStims);
       scroll(start_pos_text,'bottom');
       scroll(stim_pos_text,'bottom');
@@ -607,6 +610,7 @@ while trial <= Ntrials
 
       %Move treadmill to new stimulus position   
       speed = round(minspeed + (maxspeed-minspeed)*rand);
+      StimSpeeds(trial) = speed; %Record the speed
       message_text.Value = ['Moving to stimulus position (speed=' num2str(speed) ')'];
       if str2double(stim_pos_text.Value{end}) <= MkrDiff
           TMtestSpeed = speed;
@@ -630,11 +634,11 @@ while trial <= Ntrials
   %Stops when the limb position equals the stimulus    
   elseif MkrDiff == str2double(stim_pos_text.Value{end})
        
-      StimSpeeds(trial) = speed; %Record the speed
-      Pos_slide.Value = MkrDiff;
-
 %       stim_pos_text.Value = sprintf('%d \n', AllStims);
 %       scroll(stim_pos_text,'bottom');
+%       if isnan(str2num(start_pos_text.Value{end}))==1
+%           continue
+%       end
 
       %Stop treadmill
       TMtestSpeed = 0;  
@@ -650,6 +654,8 @@ while trial <= Ntrials
       %Set speeds
       Payload=[format actualData' secCheck' padding];
       fwrite(t,Payload,'uint8');
+
+      Pos_slide.Value = MkrDiff;
       
       %Engage the visual feedback/prompts
       choicelbl.Visible = 'on'; %Display the question for the subject
@@ -683,7 +689,7 @@ while trial <= Ntrials
 %       AllResponses{trial} = response;
 
       AllResponses = Fig.UserData.Resp_Text.Value;
-      AllResponses = AllResponses(1:end-1);
+      AllResponses = AllResponses(1:end-1); %remove the blank
 
       %Convert the resoponse to a binary response (probability of left)
       BinaryResponses = contains(AllResponses,'left');
@@ -810,7 +816,7 @@ while trial <= Ntrials
 
       %Reset stimulus position
 %       AllStims(end+1) = nan;
-      stim_pos_text.Value = sprintf('%d \n',[AllStims(1:end-1) nan]);
+      stim_pos_text.Value = sprintf('%d \n',[AllStims nan]);
       start_pos_text.Value = sprintf('%d \n',AllStarts);
       scroll(start_pos_text,'bottom');
       scroll(stim_pos_text,'bottom');
@@ -827,6 +833,7 @@ while trial <= Ntrials
 
       %Move treadmill to new stimulus position   
       speed = round(minspeed + (maxspeed-minspeed)*rand);
+      StartSpeeds(trial) = speed; %Record the speed
       message_text.Value = ['Moving to start position (speed=' num2str(speed) ')'];
       if str2double(start_pos_text.Value{end}) <= MkrDiff
           TMtestSpeed = speed;
