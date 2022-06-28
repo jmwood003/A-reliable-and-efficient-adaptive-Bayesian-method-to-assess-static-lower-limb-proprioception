@@ -1,45 +1,54 @@
 function [alpha_EV, beta_EV, AllStarts, AllStims, AllResponses, BinaryResponses, StartSpeeds, StimSpeeds] = ViconTMConnect_PSI(Ntrials, X, alpha_range, beta_range, pr_left_lookup, pr_right_lookup, TLstr, offset)
 
+%Set the seed 
 rng('shuffle');
+
+%The start positions will be randomized based on this sigma
 strtpos_sigma = 50;
 
-%Treadmill Speeds
+%Set the min and max treadmill Speeds
 minspeed = 10;
-maxspeed = 50;
+maxspeed = 30;
 
-%Set the first round of start positions (changed every 10 trials)
-%If TBidx == 1, the start position is from the top, if 0, it is from
-%the bottom 
+%The start positions should move from the bottom up to top down an even
+%number of times (1 = top down, 0 bottom up)
 TBidx = rand(1,Ntrials)>0.5;
 half = round(Ntrials/2);
 while sum(TBidx) == half
     TBidx = rand(1,Ntrials)>0.5;
 end
 
-%Specify the priors (make them pretty wide, but reasonable)
-%we are working in 2d space now
+%Specify the priors
 alpha_p = normpdf(alpha_range,-offset,20);
 beta_p = exppdf(beta_range,20);
 prior = beta_p'*alpha_p;
 
-%We are injecting some extreme stimuli into the trials 
-%Every 10 trials: 
-extreme_space = 10; 
-start_rand=5;%Starting at the 5th trial
+%Add in random stimuli to aviode lapses and loss of focus
+extreme_space = 10; %Inject extreme stimuli every 10 trials 
+random_space = 5;   %Inject random stimuli around the threshold estimate every 5 trials
 
-%This loop randomizes when the extreme stimulus will be provided
-%And determines which stimulus will be provided
+start_rand=5; %Starting both at the 5th trial
+
+%Randomizes when the extreme stimulus will be provided
 for e = 1:floor(Ntrials/extreme_space)
-    current_idx = start_rand:start_rand+extreme_space-1;
-    random_stims = datasample(current_idx,2,'Replace',false);
-    extreme_trials(e) = random_stims(1);
-    iqr_trials(e) = random_stims(2);
+    current_ext_idx = start_rand:start_rand+extreme_space-1; %index 10 trials at a time
+    random_sample = datasample(current_ext_idx,3,'Replace',false); %sample randomly from this index
+
+    extreme_trials(e) = random_sample(1); %the first sample is the extreme trials
+
+    %The next two samples are the random trials but they need to be on
+    %either side of 5 trials
+    middle_idx = current_ext_idx(1) + random_space;
+    current_rand_idx1 = start_rand:start_rand+random_space-1;
+    current_rand_idx2 = current_rand_idx1(end)+1:current_rand_idx1(end)+1+random_space-1;
+
+    rand_trials(e) = random_sample(2);
     
-    start_rand = current_idx(end)+1;
+    start_rand = current_ext_idx(end)+1;
 end
 extreme_trials = [extreme_trials, nan]; %Pad with nans to prevent over indexing
-iqr_trials = [iqr_trials, nan];
-et_idx = 1; iqr_idx = 1; %Set the index for these trials
+rand_trials = [rand_trials, nan];
+et_idx = 1; rand_idx = 1; %Set the index for these trials
 
 %Psudorandomize the extreme options (note that I have one more negative
 %stimulus added vs positive - based on pilot testing individuals tend to be
@@ -311,7 +320,7 @@ R_btn = uibutton(gl,'BackgroundColor','g','Text','Right','FontSize',50,'ButtonPu
 R_btn.Layout.Row = 4;
 R_btn.Layout.Column = 3;
 
-Err_btn = uibutton(gl,'BackgroundColor','r','Text','Error!','FontSize',50,'ButtonPushedFcn',{@error_callback, t, alpha_range, beta_range, prior, extreme_trials, iqr_trials, X, pr_left_lookup, pr_right_lookup, strtpos_sigma, TBidx, TLstr});
+Err_btn = uibutton(gl,'BackgroundColor','r','Text','Error!','FontSize',50,'ButtonPushedFcn',{@error_callback, t, alpha_range, beta_range, prior, extreme_trials, rand_trials, X, pr_left_lookup, pr_right_lookup, strtpos_sigma, TBidx, TLstr});
 Err_btn.Layout.Row = 4;
 Err_btn.Layout.Column = 4;
 
@@ -768,13 +777,13 @@ while trial <= Ntrials
       if trial==extreme_trials(et_idx) %Extreme stimulus 
           AllStims(trial) = extreme_stims(et_idx);
           et_idx = et_idx+1;
-      elseif trial==iqr_trials(iqr_idx) %less extreme stimulus
+      elseif trial==rand_trials(rand_idx) %less extreme stimulus
           addsub = [-40,-30,30,40]; %Change to plus or minus 
           potential_stims = round(alpha_EV(trial-1))+addsub; 
           new_stim = potential_stims(randi(length(potential_stims)));
           [~, stimidx] = min(abs(X-new_stim));
           AllStims(trial) = X(stimidx);
-          iqr_idx = iqr_idx+1;
+          rand_idx = rand_idx+1;
       else %Entropy calculation 
           %Calculate the best stimulus for the next trial using information entropy     
           %Loop through all potential stimulus values
