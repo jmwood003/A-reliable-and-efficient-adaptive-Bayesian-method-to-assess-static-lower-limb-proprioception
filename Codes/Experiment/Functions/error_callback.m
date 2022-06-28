@@ -144,7 +144,7 @@ else
     startpos = next_start;
 
     %Update interface
-    AllTrials(next_trial) = AllTrials(end)+1;
+    AllTrials(next_trial) = next_trial;
     Fig.UserData.Trials.Value = sprintf('%d \n', AllTrials);
     Fig.UserData.Stims.Value = sprintf('%d \n', [AllStims, nan]);
     Fig.UserData.Starts.Value = sprintf('%d \n', AllStarts);  
