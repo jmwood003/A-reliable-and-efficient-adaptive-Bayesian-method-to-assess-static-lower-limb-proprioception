@@ -335,7 +335,7 @@ Pos_slide = uislider(gl,'Orientation','vertical','Limits',[-300 300],'MajorTicks
 Pos_slide.Layout.Row = [3 5];
 Pos_slide.Layout.Column = 5;
 
-Fig.UserData = struct("Resp_Text", resp_text, "Trials", trial_text, "Switch", Switch, "Message", message_text, "Stims",stim_pos_text, "Starts", start_pos_text, "Position", Pos_slide);
+Fig.UserData = struct("Resp_Text", resp_text, "Trials", trial_text, "Switch", Switch, "Message", message_text, "Stims",stim_pos_text, "Starts", start_pos_text, "Position", Pos_slide,"Left_btn",L_btn,'Right_btn',R_btn);
 
 %Disable buttons for now
 set(L_btn,'Enable','off');
@@ -569,6 +569,8 @@ while trial <= Ntrials
   if MkrDiff == str2double(start_pos_text.Value{end})
       
 
+    %Need to get the start position and end position from the GUI
+
 %       start_pos_text.Value = sprintf('%d \n',AllStarts);
 %       scroll(start_pos_text,'bottom');
 %       if isnan(str2num(stim_pos_text.Value{end}))==1
@@ -671,9 +673,9 @@ while trial <= Ntrials
       
       message_text.BackgroundColor = 'white';
 
-      %Disable buttons again
-      set(L_btn,'Enable','off');
-      set(R_btn,'Enable','off');      
+%       %Disable buttons again
+%       set(L_btn,'Enable','off');
+%       set(R_btn,'Enable','off');      
       set(Err_btn,'Enable','on');
           
 %       response = input(['Response (r or l)?'],'s');

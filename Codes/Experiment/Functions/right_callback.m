@@ -1,6 +1,8 @@
 function right_callback(src,event)  
 
 Fig = ancestor(src,"figure","toplevel");
+Fig.UserData.Left_btn.Enable = 'off';
+Fig.UserData.Right_btn.Enable = 'off';
 Responses = Fig.UserData.Resp_Text.Value;
 trials = Fig.UserData.Trials.Value;
 

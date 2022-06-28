@@ -44,7 +44,7 @@ end
 AllStims_str = Fig.UserData.Stims.Value;
 AllStarts_str = Fig.UserData.Starts.Value;
 AllTrials_str = Fig.UserData.Trials.Value;
-for i = 1:length(AllStims_str)
+for i = 1:length(AllTrials_str)
     AllStims(i) = str2double(AllStims_str{i});
     AllStarts(i) = str2double(AllStarts_str{i});
     AllTrials(i) = str2double(AllTrials_str{i});
