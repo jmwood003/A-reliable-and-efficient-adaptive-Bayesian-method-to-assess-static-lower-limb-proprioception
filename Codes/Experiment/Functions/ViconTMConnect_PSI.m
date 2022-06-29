@@ -1,4 +1,4 @@
-function [alpha_EV, beta_EV, AllStarts, AllStims, AllResponses, BinaryResponses, StartSpeeds, StimSpeeds, pre_selects] = ViconTMConnect_PSI(Ntrials, X, alpha_range, beta_range, pr_left_lookup, pr_right_lookup, TLstr, offset)
+function T = ViconTMConnect_PSI(Ntrials, X, alpha_range, beta_range, pr_left_lookup, pr_right_lookup, TLstr, offset)
 
 %Description: runs an AFC task using the PSI algorithm by connecting 
 % through vicon and through the treadmill controller
@@ -866,10 +866,27 @@ while trial <= Ntrials
 
 end% while true  
 
+%Remove nans
 AllStarts(isnan(AllStarts)==1) = [];
 AllStims(isnan(AllStims)==1) = [];
-AllResponses = AllResponses';
-BinaryResponses = BinaryResponses';
+%Create a logical array for the preselected stimuli
+pre_selects = pre_selects(pre_selects<Ntrials);
+trial_num = 1:Ntrials;
+pre_selectcs_logic = ismember(trial_num,pre_selects);
+
+%Create table for the output
+T = table;
+T.Trial_num = trial_num';
+T.AllStarts = AllStarts';
+T.AllStims = AllStims';
+T.SelectedStims = pre_selectcs_logic';
+T.AllResponses = AllResponses;
+T.BinaryResponses = BinaryResponses;
+T.Alpha_EV = alpha_EV';
+T.Beta_EV = beta_EV';
+T.StartSpeeds = StartSpeeds';
+T.StimSpeeds = StimSpeeds';
+
 %--------------------------------------------------------------------------
 %--------------------------------------------------------------------------
 %End Trial-----------------------------------------------------------------

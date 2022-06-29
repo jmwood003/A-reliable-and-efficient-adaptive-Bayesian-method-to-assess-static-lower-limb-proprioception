@@ -2,7 +2,7 @@
 close all; clear all; clc; 
 
 %Subject ID
-SID = 'ghost_test'; 
+SID = 'PSItest_27b'; 
 %Set test limb (moving limb)
 TestLimb = 'Left';
 %Number of trials
@@ -17,7 +17,22 @@ backupdir = 'C:\Users\Lab Account\University of Delaware - o365\Team-CHS-PT-Mort
 serverdir = 'C:\Users\Jonathan\University of Delaware - o365\Team-CHS-PT-Morton Lab - Split-Belt Recal - Jonathan - Split-Belt Recal - Jonathan\Data\PSI';
 cd(datadir);
 
+%Initialize subject table
+T = table;
+SID_cell = {};
+test_cell = {};
+TestLimb_cell = {};
+for t = 1:Ntrials
+    SID_cell{t,1} = SID(1:end-1);
+    test_cell{t,1} = SID(end);
+    TestLimb_cell{t,1} = TestLimb;
+end
+T.SID = SID_cell;
+T.Test = test_cell;
+T.TestLimb = TestLimb_cell;
+
 %% Psi test Orientation
+
 cd(Livedir);
 ViconTMConnect_Psi_orientation(TestLimb);
 
@@ -25,6 +40,7 @@ ViconTMConnect_Psi_orientation(TestLimb);
 clc;
 
 tic
+
 %Do this right before the AFC trial
 cd(Livedir);
 S = 1;
@@ -43,6 +59,9 @@ beta_range = linspace(0.001,100,201);
 
 disp(['Trial Complete, baseline bias = ', num2str(BslDiff)]);
 
+%Save in table
+T.BslDiff = ones(Ntrials,1)*BslDiff;
+
 toc
 
 %% AFC task
@@ -54,8 +73,7 @@ timevar = tic;
 
 %Run task
 cd(Livedir);
-[alpha_EV, beta_EV, AllStarts, AllStims, AllResponses, BinaryResponses, StartSpeeds, StimSpeeds, pre_selects] = ...
-    ViconTMConnect_PSI(Ntrials, X, alpha_range, beta_range, ...
+Data_table = ViconTMConnect_PSI(Ntrials, X, alpha_range, beta_range, ...
     pr_left_x, pr_right_x, TestLimb, offset);
 
 elapsedTime = toc(timevar);
@@ -77,6 +95,7 @@ end
 
 t_x = 1:length(AllStims);
 Corrected_stims = AllStims+round(BslDiff); 
+
 %Plot
 PSIfig = figure; subplot(2,4,1:2); hold on
 plot(t_x,alpha_EV+round(BslDiff),'o-','linewidth',2);
@@ -109,12 +128,26 @@ title('Estimate');
 xlim([-100 100]); ylim([0 1]);
 set(gca,'FontName','Ariel','FontSize',15);
 
-%Save data
+%Add more data into tables and combine
+TestStart_cell = {};
+for t = 1:Ntrials
+    TestStart_cell{t,1} = PhaseStart;
+end
+T.StartTime = TestStart_cell;
+T.TestLen = ones(Ntrials,1)*elapsedTime;
+Subj_table = [T, Data_table];
+
+%Save
 cd(datadir);
-save([SID '_data'], 'alpha_EV', 'beta_EV', 'AllStarts', 'AllStims', 'AllResponses', 'BinaryResponses', 'elapsedTime', 'PhaseStart', 'BslDiff', 'StartSpeeds', 'StimSpeeds', 'pre_selects');
+save([SID '_data'], 'Subj_table');
 saveas(PSIfig,[SID '_fig.fig']);
+writetable(Subj_table,[SID '_data.csv']);
+
 cd(backupdir);
-save([SID '_data'], 'alpha_EV', 'beta_EV', 'AllStarts', 'AllStims', 'AllResponses', 'BinaryResponses', 'elapsedTime', 'PhaseStart', 'BslDiff', 'StartSpeeds', 'StimSpeeds', 'pre_selects');
+save([SID '_data'], 'Subj_table');
+writetable(Subj_table,[SID '_data.csv']);
+
 cd(serverdir);
-save([SID '_data'], 'alpha_EV', 'beta_EV', 'AllStarts', 'AllStims', 'AllResponses', 'BinaryResponses', 'elapsedTime', 'PhaseStart', 'BslDiff', 'StartSpeeds', 'StimSpeeds', 'pre_selects');
+save([SID '_data'], 'Subj_table');
 saveas(PSIfig,[SID '_fig.fig']);
+writetable(Subj_table,[SID '_data.csv']);
