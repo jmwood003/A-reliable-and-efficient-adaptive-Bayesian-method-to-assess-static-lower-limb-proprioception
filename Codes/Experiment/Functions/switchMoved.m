@@ -1,8 +1,16 @@
-function switchMoved(src,event, t, TLstr)
+function switchMoved(src, event, t, TLstr)
+
+%Description: pauses the task or restarts it after a break
+
+%Inputs: 
+% src: the current user interface object (required for a callback function)
+% event: the button press event structure (required for a callback function)
+% t: the treadmill controller object
+% TLstr: string, specifying which limb is the test limb ('left' or 'right')
 
 %Treadmill Speeds
 minspeed = 10;
-maxspeed = 50;
+maxspeed = 30;
 
 %Preset treadmill stuff
 accR = 1500;
@@ -16,9 +24,13 @@ accRR=0;
 accLL=0;
 incline=0;
 
+%Index the user interfaceobject
 Fig = ancestor(src,"figure","toplevel");
+
+%If value is switched to stop
 if strcmp(src.Value,'Stop')==1
 
+    %Update the message
     Fig.UserData.Message.BackgroundColor = 'r'; 
     
     %Stop the treadmill
@@ -36,29 +48,31 @@ if strcmp(src.Value,'Stop')==1
     Payload=[format actualData' secCheck' padding];
     fwrite(t,Payload,'uint8');
 
+    %wait for a response
     uiwait(Fig);    
 
 elseif strcmp(src.Value,'Go')==1
     
+    %Resume the trial
     uiresume(Fig);
 
-    %Index the next stimulus and start position
-    next_stim = str2double(Fig.UserData.Stims.Value{end});
+    %Update the user interface
+    Fig.UserData.Message.BackgroundColor = 'w';   
+
+    %Index the next stimulus start position
     next_start = str2double(Fig.UserData.Starts.Value{end});
 
     %Retrieve marker position data
     MkrDiff = Fig.UserData.Position.Value;
 
-    %Set a random speed to start
+    %Move the treadmill
     speed = round(minspeed + (maxspeed-minspeed)*rand);
-
     Fig.UserData.Message.Value = ['Moving to start position (speed=' num2str(speed) ')'];
     if next_start < MkrDiff
       TMtestSpeed = speed;
     else
       TMtestSpeed = -speed;
     end
-
     %Format treadmill input
     if strcmp(TLstr,'Left')==1
       aux=int16toBytes([TMrefSpeed TMtestSpeed speedRR speedLL accR accL accRR accLL incline]);      
@@ -71,8 +85,7 @@ elseif strcmp(src.Value,'Go')==1
     %Set speeds
     Payload=[format actualData' secCheck' padding];
     fwrite(t,Payload,'uint8');
-
-    Fig.UserData.Message.BackgroundColor = 'w';          
+       
 end  
     
 end

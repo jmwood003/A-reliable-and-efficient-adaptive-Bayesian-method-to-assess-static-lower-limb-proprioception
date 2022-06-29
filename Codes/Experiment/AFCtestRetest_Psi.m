@@ -54,7 +54,7 @@ timevar = tic;
 
 %Run task
 cd(Livedir);
-[alpha_EV, beta_EV, AllStarts, AllStims, AllResponses, BinaryResponses, StartSpeeds, StimSpeeds] = ...
+[alpha_EV, beta_EV, AllStarts, AllStims, AllResponses, BinaryResponses, StartSpeeds, StimSpeeds, pre_selects] = ...
     ViconTMConnect_PSI(Ntrials, X, alpha_range, beta_range, ...
     pr_left_x, pr_right_x, TestLimb, offset);
 
@@ -112,8 +112,8 @@ set(gca,'FontName','Ariel','FontSize',15);
 %Save data
 if strcmp(savestr,'yes')==1
     cd(datadir);
-    save([SID '_data'], 'alpha_EV', 'beta_EV', 'AllStarts', 'AllStims', 'AllResponses', 'BinaryResponses', 'elapsedTime', 'PhaseStart', 'BslDiff', 'StartSpeeds', 'StimSpeeds');
+    save([SID '_data'], 'alpha_EV', 'beta_EV', 'AllStarts', 'AllStims', 'AllResponses', 'BinaryResponses', 'elapsedTime', 'PhaseStart', 'BslDiff', 'StartSpeeds', 'StimSpeeds', 'pre_selects');
     saveas(PSIfig,[SID '_fig.fig']);
     cd(backupdir);
-    save([SID '_data'], 'alpha_EV', 'beta_EV', 'AllStarts', 'AllStims', 'AllResponses', 'BinaryResponses', 'elapsedTime', 'PhaseStart', 'BslDiff', 'StartSpeeds', 'StimSpeeds');
+    save([SID '_data'], 'alpha_EV', 'beta_EV', 'AllStarts', 'AllStims', 'AllResponses', 'BinaryResponses', 'elapsedTime', 'PhaseStart', 'BslDiff', 'StartSpeeds', 'StimSpeeds', 'pre_selects');
 end
