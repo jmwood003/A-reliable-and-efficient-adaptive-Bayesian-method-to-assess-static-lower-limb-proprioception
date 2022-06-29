@@ -7,7 +7,6 @@ SID = 'joanthantest';
 TestLimb = 'Left';
 %Number of trials
 Ntrials = 75;
-savestr = 'yes';
 
 %Set paths and directories 
 addpath('C:\Users\Lab Account\Documents\GitHub\Split-Belt-AFC-Reliability\Codes\Experiment');
@@ -15,6 +14,7 @@ addpath('C:\Users\Lab Account\Documents\GitHub\Split-Belt-AFC-Reliability\Codes\
 Livedir = 'C:\Program Files\Vicon\DataStream SDK\Win64\MATLAB';
 datadir = 'C:\Users\Lab Account\Documents\GitHub\Split-Belt-AFC-Reliability\Data\TestRetest_PSI';
 backupdir = 'C:\Users\Lab Account\University of Delaware - o365\Team-CHS-PT-Morton Lab - Split-Belt Recal - Jonathan - Split-Belt Recal - Jonathan\Data\Backup';
+serverdir = 'C:\Users\Jonathan\University of Delaware - o365\Team-CHS-PT-Morton Lab - Split-Belt Recal - Jonathan - Split-Belt Recal - Jonathan\Data\PSI';
 cd(datadir);
 
 %% Psi test Orientation
@@ -110,10 +110,11 @@ xlim([-100 100]); ylim([0 1]);
 set(gca,'FontName','Ariel','FontSize',15);
 
 %Save data
-if strcmp(savestr,'yes')==1
-    cd(datadir);
-    save([SID '_data'], 'alpha_EV', 'beta_EV', 'AllStarts', 'AllStims', 'AllResponses', 'BinaryResponses', 'elapsedTime', 'PhaseStart', 'BslDiff', 'StartSpeeds', 'StimSpeeds', 'pre_selects');
-    saveas(PSIfig,[SID '_fig.fig']);
-    cd(backupdir);
-    save([SID '_data'], 'alpha_EV', 'beta_EV', 'AllStarts', 'AllStims', 'AllResponses', 'BinaryResponses', 'elapsedTime', 'PhaseStart', 'BslDiff', 'StartSpeeds', 'StimSpeeds', 'pre_selects');
-end
+cd(datadir);
+save([SID '_data'], 'alpha_EV', 'beta_EV', 'AllStarts', 'AllStims', 'AllResponses', 'BinaryResponses', 'elapsedTime', 'PhaseStart', 'BslDiff', 'StartSpeeds', 'StimSpeeds', 'pre_selects');
+saveas(PSIfig,[SID '_fig.fig']);
+cd(backupdir);
+save([SID '_data'], 'alpha_EV', 'beta_EV', 'AllStarts', 'AllStims', 'AllResponses', 'BinaryResponses', 'elapsedTime', 'PhaseStart', 'BslDiff', 'StartSpeeds', 'StimSpeeds', 'pre_selects');
+cd(serverdir);
+save([SID '_data'], 'alpha_EV', 'beta_EV', 'AllStarts', 'AllStims', 'AllResponses', 'BinaryResponses', 'elapsedTime', 'PhaseStart', 'BslDiff', 'StartSpeeds', 'StimSpeeds', 'pre_selects');
+saveas(PSIfig,[SID '_fig.fig']);

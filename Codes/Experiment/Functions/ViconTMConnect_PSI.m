@@ -50,7 +50,7 @@ maxspeed = 30;
 %number of times (or as close to equal as possible; 1 = top down, 0 bottom up)
 TBidx = rand(1,Ntrials)>0.5;
 half = round(Ntrials/2);
-while sum(TBidx) == half
+while sum(TBidx)~=half
     TBidx = rand(1,Ntrials)>0.5;
 end
 
@@ -860,7 +860,10 @@ while trial <= Ntrials
 
 end% while true  
 
-
+AllStarts(isnan(AllStarts)==1) = [];
+AllStims(isnan(AllStims)==1) = [];
+AllResponses = AllResponses';
+BinaryResponses = BinaryResponses';
 %--------------------------------------------------------------------------
 %--------------------------------------------------------------------------
 %End Trial-----------------------------------------------------------------
