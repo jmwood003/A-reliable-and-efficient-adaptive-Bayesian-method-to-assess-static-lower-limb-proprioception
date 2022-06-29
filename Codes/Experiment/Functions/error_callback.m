@@ -1,4 +1,4 @@
-function error_callback(src,event, t, alpha_range, beta_range, prior, extreme_trials, random_trials, X, pr_left_lookup, pr_right_lookup, strtpos_sigma, TBidx, TLstr)
+function error_callback(src, event, t, alpha_range, beta_range, prior, extreme_trials, random_trials, X, pr_left_lookup, pr_right_lookup, strtpos_sigma, TBidx, TLstr)
 
 %Description: function for when the error button is pressed in the
 %experimenter interface
@@ -82,9 +82,9 @@ AllStims = AllStims(1:error_trial);
 AllStarts = AllStarts(1:error_trial);
 AllTrials = AllTrials(1:error_trial);
 Fig.UserData.Resp_Text.Value = Fig.UserData.Resp_Text.Value(1:error_trial); %Responses
-Fig.UserData.Stims.Value = AllStims; %Stimulus positions
-Fig.UserData.Trials.Value = AllTrials; %Trial number
-Fig.UserData.Starts.Value = AllStarts; %Start positions
+Fig.UserData.Stims.Value = sprintf('%d \n', AllStims); %Stimulus positions
+Fig.UserData.Trials.Value = sprintf('%d \n', AllTrials); %Trial number
+Fig.UserData.Starts.Value = sprintf('%d \n', AllStarts); %Start positions
 
 %Select a new stimulus position 
 %Before calculating the next trial, make sure it is not a pre-set stimulus

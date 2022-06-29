@@ -584,15 +584,19 @@ while trial <= Ntrials
   if MkrDiff == str2double(start_pos_text.Value{end})
 
       %get the start position and end position from the GUI
-      AllStims_str = Fig.UserData.Stims.Value;
-      AllStarts_str = Fig.UserData.Starts.Value;
-      AllTrials_str = Fig.UserData.Trials.Value;
-      for i = 1:length(AllTrials_str)
-          AllStims(i) = str2double(AllStims_str{i});
-          AllStarts(i) = str2double(AllStarts_str{i});
+      if trial ~=1 
+          AllStims_str = Fig.UserData.Stims.Value;
+          AllStarts_str = Fig.UserData.Starts.Value;
+          AllTrials_str = Fig.UserData.Trials.Value;
+          AllStims = []; AllStarts = []; All_trial_nums = []; 
+          for i = 1:length(AllTrials_str)
+              AllStims(i) = str2double(AllStims_str{i});
+              AllStarts(i) = str2double(AllStarts_str{i});
+              All_trial_nums(i) = str2double(AllTrials_str{i});
+          end
+          AllStarts(isnan(AllStarts)==1) = [];
+          AllStims(isnan(AllStims)==1) = [];
       end
-      AllStarts(isnan(AllStarts)==1) = [];
-      AllStims(isnan(AllStims)==1) = [];
 
       %Stop treadmill
       TMtestSpeed = 0;  
@@ -650,9 +654,11 @@ while trial <= Ntrials
       AllStims_str = Fig.UserData.Stims.Value;
       AllStarts_str = Fig.UserData.Starts.Value;
       AllTrials_str = Fig.UserData.Trials.Value;
+      AllStims = []; AllStarts = []; All_trial_nums = []; 
       for i = 1:length(AllTrials_str)
           AllStims(i) = str2double(AllStims_str{i});
           AllStarts(i) = str2double(AllStarts_str{i});
+          All_trial_nums(i) = str2double(AllTrials_str{i});
       end
       AllStarts(isnan(AllStarts)==1) = [];
       AllStims(isnan(AllStims)==1) = [];
@@ -732,8 +738,8 @@ while trial <= Ntrials
       prior = posterior;
       
       %Move to the next trial
-      trial = str2double(Fig.UserData.Trials.Value{end}); %Index from the display
-      All_trial_nums(trial) = trial + 1 ; %Add the trial
+      trial = str2double(Fig.UserData.Trials.Value{end})+1; %Index from the display
+      All_trial_nums(trial) = trial; %Add the trial
       trial_text.Value = sprintf('%d \n', All_trial_nums); %update the display
       scroll(trial_text,'bottom');
 
