@@ -26,24 +26,24 @@ prior = beta_p'*alpha_p;
 %Add in random stimuli to aviode lapses and loss of focus
 extreme_space = 10; %Inject extreme stimuli every 10 trials 
 random_space = 5;   %Inject random stimuli around the threshold estimate every 5 trials
+start_rand = 6; %Starting both at the 5th trial
+addsub = [-30,-20,-10,10,20,30]; %Change to plus or minus 
+for r = 1:floor(Ntrials/random_space)
 
-start_rand=5; %Starting both at the 5th trial
+    current_rand_idx = start_rand:start_rand+random_space-1; %index 10 trials at a time
+    rand_trials(r) = datasample(current_rand_idx,1,'Replace',false); %choose an extreme index 
+    start_rand = current_rand_idx(end)+1;
+
+end
 
 %Randomizes when the extreme stimulus will be provided
+start_rand = 6; %Starting both at the 5th trial
 for e = 1:floor(Ntrials/extreme_space)
     current_ext_idx = start_rand:start_rand+extreme_space-1; %index 10 trials at a time
-    random_sample = datasample(current_ext_idx,3,'Replace',false); %sample randomly from this index
-
-    extreme_trials(e) = random_sample(1); %the first sample is the extreme trials
-
-    %The next two samples are the random trials but they need to be on
-    %either side of 5 trials
-    middle_idx = current_ext_idx(1) + random_space;
-    current_rand_idx1 = start_rand:start_rand+random_space-1;
-    current_rand_idx2 = current_rand_idx1(end)+1:current_rand_idx1(end)+1+random_space-1;
-
-    rand_trials(e) = random_sample(2);
-    
+    extreme_trials(e)  = datasample(current_ext_idx,1,'Replace',false); %choose an extreme index 
+    while ismember(extreme_trials(e),rand_trials)==1
+        extreme_trials(e)  = datasample(current_ext_idx,1,'Replace',false); %choose an extreme index 
+    end
     start_rand = current_ext_idx(end)+1;
 end
 extreme_trials = [extreme_trials, nan]; %Pad with nans to prevent over indexing
@@ -778,7 +778,6 @@ while trial <= Ntrials
           AllStims(trial) = extreme_stims(et_idx);
           et_idx = et_idx+1;
       elseif trial==rand_trials(rand_idx) %less extreme stimulus
-          addsub = [-40,-30,30,40]; %Change to plus or minus 
           potential_stims = round(alpha_EV(trial-1))+addsub; 
           new_stim = potential_stims(randi(length(potential_stims)));
           [~, stimidx] = min(abs(X-new_stim));
