@@ -45,7 +45,7 @@ xlabel('Trial'); ylabel('Stimiulus');
 legend(['\alpha estimate = ' num2str(round(T.Alpha_EV(end)+round(BslDiff),2))],'Stimulus (r = "left")','Stimulus (r = "right")');
 legend('boxoff');
 ylim([-100 100]);
-title([strrep(T.SID{1},'_',' ') ' - trial by trial']);
+title([strrep(T.SID{1},'_',' '), T.Test{1}, ' - trial by trial']);
 set(gca,'FontName','Ariel','FontSize',15);
 
 subplot(2,4,5:6); hold on
