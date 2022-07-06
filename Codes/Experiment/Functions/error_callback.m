@@ -1,4 +1,4 @@
-function error_callback(src, event, t, alpha_range, beta_range, prior, extreme_trials, random_trials, X, pr_left_lookup, pr_right_lookup, strtpos_sigma, TBidx, TLstr)
+function error_callback(src, event, t, alpha_range, beta_range, prior, extreme_trials, random_trials, X, pr_left_lookup, pr_right_lookup, strtpos_mu, strtpos_sigma, TBidx, TLstr)
 
 %Description: function for when the error button is pressed in the
 %experimenter interface
@@ -51,15 +51,23 @@ Fig.UserData.Message.BackgroundColor = 'r';
 %Get user input for the error trial
 error_trial = inputdlg('Which trial was wrong?');
 error_trial = str2double(error_trial{1});
-next_trial = error_trial+1;
+
+%Set the default
+incorrect_response = Fig.UserData.Resp_Text.Value{error_trial};
+if strcmp(incorrect_response,'left')
+    default = 'right';
+else
+    default = 'left';
+end
+
+%Input the correct response
+correct_respponse = questdlg('Select the correct response','Enter correct response','left','right',default);
 
 %Correct erroneous response
-Error_response = Fig.UserData.Resp_Text.Value{error_trial};
-if strcmp(Error_response,'left')==1
-    Fig.UserData.Resp_Text.Value{error_trial} = 'right';
-elseif strcmp(Error_response,'right')==1
-    Fig.UserData.Resp_Text.Value{error_trial} = 'left';
-end
+Fig.UserData.Resp_Text.Value{error_trial} = correct_respponse;
+
+%Set the next trial after the error
+next_trial = error_trial+1;
 
 %Index all stimuli and start positions and turn the into numerical format
 AllStims_str = Fig.UserData.Stims.Value;
@@ -146,13 +154,11 @@ if ismember(next_trial,extreme_trials)==0 && ismember(next_trial,random_trials)=
     AllStims(next_trial) = X(minH_idx);
 
     %Get a new start position 
-    startpos = round(normrnd(AllStims(next_trial),strtpos_sigma));
-    while TBidx(next_trial)==1 && startpos <= AllStims(next_trial) %This means that the start position should be above but it is below
-        startpos = round(normrnd(AllStims(next_trial),strtpos_sigma));
-    end
-    while TBidx(next_trial)==0 && startpos >= AllStims(next_trial) %This means that the start position should be below but it is above
-        startpos = round(normrnd(AllStims(next_trial),strtpos_sigma));
-    end
+    if TBidx(next_trial)==1
+        startpos = round(normrnd(strtpos_mu,strtpos_sigma));
+    elseif TBidx(next_trial)==0
+        startpos = round(normrnd(-strtpos_mu,strtpos_sigma));
+    end    
     AllStarts(next_trial) = startpos;
   
     %Update interface
