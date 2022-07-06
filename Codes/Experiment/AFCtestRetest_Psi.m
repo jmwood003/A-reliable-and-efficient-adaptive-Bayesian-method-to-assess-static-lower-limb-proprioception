@@ -2,11 +2,8 @@
 close all; clear all; clc; 
 
 %Subject ID
-<<<<<<< Updated upstream
-SID = 'PSItest_21a'; 
-=======
-SID = 'PSItest_30b'; 
->>>>>>> Stashed changes
+SID = 'PSItest_31a'; 
+
 %Set test limb (moving limb)
 TestLimb = 'Left';
 %Number of trials
