@@ -2,7 +2,11 @@
 close all; clear all; clc; 
 
 %Subject ID
-SID = 'ghost_test'; 
+<<<<<<< Updated upstream
+SID = 'PSItest_21a'; 
+=======
+SID = 'PSItest_30b'; 
+>>>>>>> Stashed changes
 %Set test limb (moving limb)
 TestLimb = 'Left';
 %Number of trials

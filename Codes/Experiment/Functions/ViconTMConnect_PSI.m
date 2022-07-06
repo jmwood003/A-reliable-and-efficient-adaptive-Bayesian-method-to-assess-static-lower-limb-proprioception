@@ -40,9 +40,7 @@ function T = ViconTMConnect_PSI(Ntrials, X, alpha_range, beta_range, pr_left_loo
 rng('shuffle');
 
 %The start positions will be randomized based on this sigma
-strtpos_sigma = 5;
-strtpos_mu = 100-offset;
-% strtpos_sigma = 50;
+strtpos_sigma = 50;
 
 %Set the min and max treadmill Speeds
 minspeed = 10;
@@ -101,14 +99,71 @@ pre_selects(isnan(pre_selects)==1) = [];
 %--------------------------------------------------------------------------
 %--------------------------------------------------------------------------
 
-HostName = 'localhost:801';
+
+% Program options
+TransmitMulticast = false;
+EnableHapticFeedbackTest = false;
+HapticOnList = {'ViconAP_001';'ViconAP_002'};
+SubjectFilterApplied = false;
+bPrintSkippedFrame = false;
+
+% Check whether these variables exist, as they can be set by the command line on launch
+% If you run the script with Command Window in Matlab, these workspace vars could persist the value from previous runs even not set in the Command Window
+% You could clear the value with "clearvars"
+if ~exist( 'bReadCentroids' )
+  bReadCentroids = false;
+end
+
+if ~exist( 'bReadRays' )
+  bReadRays = false;
+end
+
+if ~exist( 'bTrajectoryIDs' )
+  bTrajectoryIDs = false;
+end
+
+if ~exist( 'axisMapping' )
+  axisMapping = 'ZUp';
+end
+
+% example for running from commandline in the ComandWindow in Matlab
+% e.g. bLightweightSegment = true;HostName = 'localhost:801';ViconDataStreamSDK_MATLABTest
+if ~exist('bLightweightSegment')
+  bLightweightSegment = false;
+end
+
+% Pass the subjects to be filtered in
+% e.g. Subject = {'Subject1'};HostName = 'localhost:801';ViconDataStreamSDK_MATLABTest
+EnableSubjectFilter  = exist('subjects');
+
+% Program options
+if ~exist( 'HostName' )
+  HostName = 'localhost:801';
+end
+
+if exist('undefVar')
+  fprintf('Undefined Variable: %s\n', mat2str( undefVar ) );
+end
 
 % Load the SDK
 fprintf( 'Loading SDK...' );
 addpath( '..\dotNET' );
 dssdkAssembly = which('ViconDataStreamSDK_DotNET.dll');
+if dssdkAssembly == ""
+  [ file, path ] = uigetfile( '*.dll' );
+  if isequal( file, 0 )
+    fprintf( 'User canceled' );
+    return;
+  else
+    dssdkAssembly = fullfile( path, file );
+  end   
+end
+
 NET.addAssembly(dssdkAssembly);
 fprintf( 'done\n' );
+
+% % A dialog to stop the loop
+% MessageBox = msgbox( 'Stop DataStream Client', 'Vicon DataStream SDK' );
 
 % Make a new client
 MyClient = ViconDataStreamSDK.DotNET.Client();
@@ -118,19 +173,63 @@ fprintf( 'Connecting to %s ...', HostName );
 while ~MyClient.IsConnected().Connected
   % Direct connection
   MyClient.Connect( HostName );
+  
+  % Multicast connection
+  % MyClient.ConnectToMulticast( HostName, '224.0.0.0' );
+  
   fprintf( '.' );
 end
-fprintf( 'done\n' );
+fprintf( '\n' );
 
 % Enable some different data types
 MyClient.EnableSegmentData();
 MyClient.EnableMarkerData();
 MyClient.EnableUnlabeledMarkerData();
 MyClient.EnableDeviceData();
+if bReadCentroids
+  MyClient.EnableCentroidData();
+end
+if bReadRays
+  MyClient.EnableMarkerRayData();
+end
 
-% Set the streaming mode and buffer size
+if bLightweightSegment
+  MyClient.DisableLightweightSegmentData();
+  Output_EnableLightweightSegment = MyClient.EnableLightweightSegmentData();
+  if Output_EnableLightweightSegment.Result ~= ViconDataStreamSDK.DotNET.Result.Success
+    fprintf( 'Server does not support lightweight segment data.\n' );
+  end
+end
+
 MyClient.SetBufferSize(1)
+% % Set the streaming mode
 MyClient.SetStreamMode( ViconDataStreamSDK.DotNET.StreamMode.ClientPull  );
+% % MyClient.SetStreamMode( StreamMode.ClientPullPreFetch );
+% % MyClient.SetStreamMode( StreamMode.ServerPush );
+
+% % Set the global up axis
+if axisMapping == 'XUp'
+  MyClient.SetAxisMapping( ViconDataStreamSDK.DotNET.Direction.Up, ...
+                           ViconDataStreamSDK.DotNET.Direction.Forward,      ...
+                           ViconDataStreamSDK.DotNET.Direction.Left ); % X-up
+elseif axisMapping == 'YUp'
+  MyClient.SetAxisMapping(  ViconDataStreamSDK.DotNET.Direction.Forward, ...
+                          ViconDataStreamSDK.DotNET.Direction.Up,    ...
+                          ViconDataStreamSDK.DotNET.Direction.Right );    % Y-up
+else
+  MyClient.SetAxisMapping(  ViconDataStreamSDK.DotNET.Direction.Forward, ...
+                          ViconDataStreamSDK.DotNET.Direction.Left,    ...
+                          ViconDataStreamSDK.DotNET.Direction.Up );    % Z-up
+end
+
+Output_GetAxisMapping = MyClient.GetAxisMapping();
+
+% Discover the version number
+Output_GetVersion = MyClient.GetVersion();
+
+% if TransmitMulticast
+%   MyClient.StartTransmittingMulticast( 'localhost', '224.0.0.0' );
+% end  
 
 
 %--------------------------------------------------------------------------
@@ -146,6 +245,7 @@ MyClient.SetStreamMode( ViconDataStreamSDK.DotNET.StreamMode.ClientPull  );
 %Set treadmill speed and acceleration
 accR = 1500;
 accL = 1500;   
+TMtestSpeed = 0;   
 TMrefSpeed = 0; 
 
 %Set a random speed to start
@@ -235,7 +335,7 @@ L_btn.Layout.Column = 2;
 R_btn = uibutton(gl,'BackgroundColor','g','Text','Right','FontSize',50,'ButtonPushedFcn',@right_callback);
 R_btn.Layout.Row = 4;
 R_btn.Layout.Column = 3;
-Err_btn = uibutton(gl,'BackgroundColor','r','Text','Error!','FontSize',50,'ButtonPushedFcn',{@error_callback, t, alpha_range, beta_range, prior, extreme_trials, rand_trials, X, pr_left_lookup, pr_right_lookup, strtpos_mu, strtpos_sigma, TBidx, TLstr});
+Err_btn = uibutton(gl,'BackgroundColor','r','Text','Error!','FontSize',50,'ButtonPushedFcn',{@error_callback, t, alpha_range, beta_range, prior, extreme_trials, rand_trials, X, pr_left_lookup, pr_right_lookup, strtpos_sigma, TBidx, TLstr});
 Err_btn.Layout.Row = 4;
 Err_btn.Layout.Column = 4;
 %Switch
@@ -303,30 +403,30 @@ end
 AllStims(1) = X(minH_idx);
 
 %Get a start position and record in a different variable
-if TBidx(1)==1
-    startpos = round(normrnd(strtpos_mu,strtpos_sigma));
-elseif TBidx(1)==0
-    startpos = round(normrnd(-strtpos_mu,strtpos_sigma));
+startpos = round(normrnd(AllStims(1),strtpos_sigma));
+while TBidx(1)==1 && startpos <= AllStims(1) %This means that the start position should be above but it is below
+    startpos = round(normrnd(AllStims(1),strtpos_sigma));
 end
-% startpos = round(normrnd(AllStims(1),strtpos_sigma));
-% while TBidx(1)==1 && startpos <= AllStims(1) %This means that the start position should be above but it is below
-%     startpos = round(normrnd(AllStims(1),strtpos_sigma));
-% end
-% while TBidx(1)==0 && startpos >= AllStims(1) %This means that the start position should be below but it is above
-%     startpos = round(normrnd(AllStims(1),strtpos_sigma));
-% end
+while TBidx(1)==0 && startpos >= AllStims(1) %This means that the start position should be below but it is above
+    startpos = round(normrnd(AllStims(1),strtpos_sigma));
+end
 AllStarts(1) = startpos;
 
 %Initialize pre-set parameters 
+Frame = -1;
+SkippedFrames = [];
 Counter = 1;
 tStart = tic;
 trial = 1;
 alpha_EV = [];
 beta_EV = [];
 AllResponses = [];
+All_trial_nums = [];
+StartSpeeds = [];
 StimSpeeds = [];
 
 %Update the display
+All_trial_nums(1) = trial;
 trial_text.Value = sprintf('%d \n',trial);
 start_pos_text.Value = sprintf('%d \n',AllStarts);
 stim_pos_text.Value = sprintf('%d \n',nan);
@@ -363,6 +463,46 @@ while trial <= Ntrials
   while MyClient.GetFrame().Result ~= ViconDataStreamSDK.DotNET.Result.Success
     fprintf( '.' );
   end% while
+
+  % Get the frame number
+  Output_GetFrameNumber = MyClient.GetFrameNumber();
+  if Frame ~= -1
+    while Output_GetFrameNumber.FrameNumber > Frame + 1
+      SkippedFrames = [SkippedFrames Frame+1];
+      if bPrintSkippedFrame
+        fprintf( 'Skipped frame: %d\n', Frame+1 );      
+      end
+      Frame = Frame + 1;
+    end
+  end
+  Frame = Output_GetFrameNumber.FrameNumber;  
+
+  % Get the frame rate
+  Output_GetFrameRate = MyClient.GetFrameRate();
+
+  for FrameRateIndex = 0:MyClient.GetFrameRateCount().Count -1
+    FrameRateName  = MyClient.GetFrameRateName( FrameRateIndex ).Name;
+    FrameRateValue = MyClient.GetFrameRateValue( FrameRateName ).Value;
+  end
+
+  % Get the timecode
+  Output_GetTimecode = MyClient.GetTimecode();
+
+  % Get the latency 
+  for LatencySampleIndex = 0:typecast( MyClient.GetLatencySampleCount().Count, 'int32' ) -1
+    SampleName  = MyClient.GetLatencySampleName( typecast( LatencySampleIndex, 'uint32') ).Name;
+    SampleValue = MyClient.GetLatencySampleValue( SampleName ).Value;
+
+  end% for  
+                     
+  Output_GetHardwareFrameNumber = MyClient.GetHardwareFrameNumber();
+
+  if EnableSubjectFilter && ~SubjectFilterApplied 
+    for SubjectIndex = 1: length( Subject )
+      Output_SubjectFilter = MyClient.AddToSubjectFilter(char( Subject(SubjectIndex)));
+      SubjectFilterApplied = SubjectFilterApplied || Output_SubjectFilter.Result.Value == Result.Success;
+    end
+  end
   
   %Index the heel markers 
   SubjectCount = MyClient.GetSubjectCount().SubjectCount;  
@@ -489,12 +629,10 @@ while trial <= Ntrials
       speed = round(minspeed + (maxspeed-minspeed)*rand);
       StimSpeeds(trial) = speed; %Record the speed
       message_text.Value = ['Moving to stimulus position (speed=' num2str(speed) ')']; %display message
-      if str2double(stim_pos_text.Value{end}) < MkrDiff
+      if str2double(stim_pos_text.Value{end}) <= MkrDiff
           TMtestSpeed = speed;
-      elseif str2double(stim_pos_text.Value{end}) > MkrDiff
+      else
           TMtestSpeed = -speed;
-      else str2double(stim_pos_text.Value{end}) == MkrDiff
-          TMtestSpeed = 0;
       end
       %Format treadmill input
       if strcmp(TLstr,'Left')==1
@@ -666,18 +804,13 @@ while trial <= Ntrials
       end
 
       %Get a new start position based on the next stim position
-      if TBidx(trial)==1
-          startpos = round(normrnd(strtpos_mu,strtpos_sigma));
-      elseif TBidx(trial)==0
-          startpos = round(normrnd(-strtpos_mu,strtpos_sigma));
-      end      
-%       startpos = round(normrnd(AllStims(trial),strtpos_sigma));
-%       while TBidx(trial)==1 && startpos <= AllStims(trial) %This means that the start position should be above but it is below
-%           startpos = round(normrnd(AllStims(trial),strtpos_sigma));
-%       end
-%       while TBidx(trial)==0 && startpos >= AllStims(trial) %This means that the start position should be below but it is above
-%           startpos = round(normrnd(AllStims(trial),strtpos_sigma));
-%       end
+      startpos = round(normrnd(AllStims(trial),strtpos_sigma));
+      while TBidx(trial)==1 && startpos <= AllStims(trial) %This means that the start position should be above but it is below
+          startpos = round(normrnd(AllStims(trial),strtpos_sigma));
+      end
+      while TBidx(trial)==0 && startpos >= AllStims(trial) %This means that the start position should be below but it is above
+          startpos = round(normrnd(AllStims(trial),strtpos_sigma));
+      end
       AllStarts(trial) = startpos;
 
       %Update the display
@@ -690,12 +823,10 @@ while trial <= Ntrials
       speed = round(minspeed + (maxspeed-minspeed)*rand);
       StartSpeeds(trial) = speed; %Record the speed
       message_text.Value = ['Moving to start position (speed=' num2str(speed) ')'];
-      if str2double(start_pos_text.Value{end}) < MkrDiff
+      if str2double(start_pos_text.Value{end}) <= MkrDiff
           TMtestSpeed = speed;
-      elseif str2double(start_pos_text.Value{end}) > MkrDiff
+      else
           TMtestSpeed = -speed;
-      elseif str2double(start_pos_text.Value{end}) == MkrDiff
-          TMtestSpeed = 0;
       end
       %Format treadmill input
       if strcmp(TLstr,'Left')==1
@@ -770,6 +901,11 @@ close(Fig);
 delete(Fig);
 
 clear t;
+
+%Disconnect from Vicon
+if TransmitMulticast
+  MyClient.StopTransmittingMulticast();
+end  
 
 % Disconnect and dispose
 MyClient.Disconnect();

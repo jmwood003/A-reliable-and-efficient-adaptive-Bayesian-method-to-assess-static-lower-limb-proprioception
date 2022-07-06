@@ -1,4 +1,4 @@
-function error_callback(src, event, t, alpha_range, beta_range, prior, extreme_trials, random_trials, X, pr_left_lookup, pr_right_lookup, strtpos_mu, strtpos_sigma, TBidx, TLstr)
+function error_callback(src, event, t, alpha_range, beta_range, prior, extreme_trials, random_trials, X, pr_left_lookup, pr_right_lookup, strtpos_sigma, TBidx, TLstr)
 
 %Description: function for when the error button is pressed in the
 %experimenter interface
@@ -146,18 +146,13 @@ if ismember(next_trial,extreme_trials)==0 && ismember(next_trial,random_trials)=
     AllStims(next_trial) = X(minH_idx);
 
     %Get a new start position 
-%     startpos = round(normrnd(AllStims(next_trial),strtpos_sigma));
-%     while TBidx(next_trial)==1 && startpos <= AllStims(next_trial) %This means that the start position should be above but it is below
-%         startpos = round(normrnd(AllStims(next_trial),strtpos_sigma));
-%     end
-%     while TBidx(next_trial)==0 && startpos >= AllStims(next_trial) %This means that the start position should be below but it is above
-%         startpos = round(normrnd(AllStims(next_trial),strtpos_sigma));
-%     end
-    if TBidx(next_trial)==1
-        startpos = round(normrnd(strtpos_mu,strtpos_sigma));
-    elseif TBidx(next_trial)==0
-        startpos = round(normrnd(-strtpos_mu,strtpos_sigma));
-    end      
+    startpos = round(normrnd(AllStims(next_trial),strtpos_sigma));
+    while TBidx(next_trial)==1 && startpos <= AllStims(next_trial) %This means that the start position should be above but it is below
+        startpos = round(normrnd(AllStims(next_trial),strtpos_sigma));
+    end
+    while TBidx(next_trial)==0 && startpos >= AllStims(next_trial) %This means that the start position should be below but it is above
+        startpos = round(normrnd(AllStims(next_trial),strtpos_sigma));
+    end
     AllStarts(next_trial) = startpos;
   
     %Update interface
