@@ -54,6 +54,7 @@ half = round(Ntrials/2);
 while sum(TBidx)~=half
     TBidx = rand(1,Ntrials)>0.5;
 end
+sum(TBidx)
 
 %Specify the priors
 alpha_p = normpdf(alpha_range,-offset,20);
@@ -302,8 +303,14 @@ AllStims(1) = X(minH_idx);
 %Get a start position and record in a different variable
 if TBidx(1)==1
     startpos = round(normrnd(strtpos_mu,strtpos_sigma));
+    while startpos <= AllStims(1)
+        startpos = round(normrnd(strtpos_mu,strtpos_sigma));
+    end
 elseif TBidx(1)==0
     startpos = round(normrnd(-strtpos_mu,strtpos_sigma));
+    while startpos >= AllStims(1)
+        startpos = round(normrnd(-strtpos_mu,strtpos_sigma));
+    end    
 end
 AllStarts(1) = startpos;
 
@@ -660,8 +667,14 @@ while trial <= Ntrials
       %Get a new start position based on the next stim position
       if TBidx(trial)==1
           startpos = round(normrnd(strtpos_mu,strtpos_sigma));
+          while startpos <= AllStims(trial)
+              startpos = round(normrnd(strtpos_mu,strtpos_sigma));
+          end    
       elseif TBidx(trial)==0
           startpos = round(normrnd(-strtpos_mu,strtpos_sigma));
+          while startpos >= AllStims(trial)
+              startpos = round(normrnd(-strtpos_mu,strtpos_sigma));
+          end            
       end
       AllStarts(trial) = startpos;
 

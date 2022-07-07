@@ -156,8 +156,14 @@ if ismember(next_trial,extreme_trials)==0 && ismember(next_trial,random_trials)=
     %Get a new start position 
     if TBidx(next_trial)==1
         startpos = round(normrnd(strtpos_mu,strtpos_sigma));
+        while startpos <= AllStims(next_trial)
+            startpos = round(normrnd(strtpos_mu,strtpos_sigma));
+        end    
     elseif TBidx(next_trial)==0
         startpos = round(normrnd(-strtpos_mu,strtpos_sigma));
+        while startpos >= AllStims(next_trial)
+            startpos = round(normrnd(-strtpos_mu,strtpos_sigma));
+        end            
     end    
     AllStarts(next_trial) = startpos;
   
