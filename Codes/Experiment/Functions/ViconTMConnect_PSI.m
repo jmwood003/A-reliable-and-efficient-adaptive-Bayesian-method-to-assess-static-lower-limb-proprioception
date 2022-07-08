@@ -44,8 +44,10 @@ strtpos_sigma = 5;
 strtpos_mu = 100-offset;
 
 %Set the min and max treadmill Speeds
-minspeed = 10;
-maxspeed = 30;
+min_speed_stim = 10;
+max_speed_stim = 30;
+min_speed_start = 40;
+max_speed_start = 50;
 
 %The start positions should move from the bottom up to top down an even
 %number of times (or as close to equal as possible; 1 = top down, 0 bottom up)
@@ -54,7 +56,6 @@ half = round(Ntrials/2);
 while sum(TBidx)~=half
     TBidx = rand(1,Ntrials)>0.5;
 end
-sum(TBidx)
 
 %Specify the priors
 alpha_p = normpdf(alpha_range,-offset,20);
@@ -329,7 +330,7 @@ start_pos_text.Value = sprintf('%d \n',AllStarts);
 stim_pos_text.Value = sprintf('%d \n',nan);
 
 %Move treadmill to the start position position   
-speed = round(minspeed + (maxspeed-minspeed)*rand);
+speed = round(min_speed_start + (max_speed_start-min_speed_start)*rand);
 StartSpeeds = speed; %Record the speed
 message_text.Value = ['Moving to start position (speed=' num2str(speed) ')'];
 if str2double(start_pos_text.Value{end}) < offset
@@ -485,7 +486,7 @@ while trial <= Ntrials
       pause(2*rand(1));
 
       %Move treadmill to new stimulus position   
-      speed = round(minspeed + (maxspeed-minspeed)*rand);
+      speed = round(min_speed_stim + (max_speed_stim-min_speed_stim)*rand);
       StimSpeeds(trial) = speed; %Record the speed
       message_text.Value = ['Moving to stimulus position (speed=' num2str(speed) ')']; %display message
       if str2double(stim_pos_text.Value{end}) < MkrDiff
@@ -685,7 +686,7 @@ while trial <= Ntrials
       scroll(stim_pos_text,'bottom');
 
       %Move treadmill to new stimulus position   
-      speed = round(minspeed + (maxspeed-minspeed)*rand);
+      speed = round(min_speed_start + (max_speed_start-min_speed_start)*rand);
       StartSpeeds(trial) = speed; %Record the speed
       message_text.Value = ['Moving to start position (speed=' num2str(speed) ')'];
       if str2double(start_pos_text.Value{end}) < MkrDiff
