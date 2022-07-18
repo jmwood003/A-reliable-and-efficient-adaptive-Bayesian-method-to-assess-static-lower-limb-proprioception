@@ -1,7 +1,10 @@
 function ViconTMConnect_Psi_orientation(TLstr)
 
-minspeed = 10;
-maxspeed = 50;
+%Set the min and max treadmill Speeds
+min_speed_stim = 10;
+max_speed_stim = 30;
+min_speed_start = 40;
+max_speed_start = 50;
 
 AllStarts = [-60, 60];
 AllStims = [-100, 100];
@@ -76,7 +79,7 @@ accL = 1500;
 TMrefSpeed = 0; 
 
 %Set a random speed to start
-speed = round(minspeed + (maxspeed-minspeed)*rand);
+speed = round(min_speed_start + (max_speed_start-min_speed_start)*rand);
 
 %Format treadmill input
 format=0;
@@ -342,7 +345,7 @@ while trial <= 2
       pause(2*rand(1));
 
       %Move treadmill to new stimulus position   
-      speed = round(minspeed + (maxspeed-minspeed)*rand);
+      speed = round(min_speed_stim + (max_speed_stim-min_speed_stim)*rand);
       message_text.Value = ['Moving to stimulus position (speed=' num2str(speed) ')'];
       if stimulus <= MkrDiff
           TMtestSpeed = speed;
@@ -427,8 +430,8 @@ while trial <= 2
       start_pos_text.Value = sprintf('%d \n',AllStarts);
       stim_pos_text.Value = sprintf('%d \n',AllStims);
 
-      %Move treadmill to new stimulus position   
-      speed = round(minspeed + (maxspeed-minspeed)*rand);
+      %Move treadmill to new start position   
+      speed = round(min_speed_start + (max_speed_start-min_speed_start)*rand);
       message_text.Value = ['Moving to start position (speed=' num2str(speed) ')'];
       if startpos <= MkrDiff
           TMtestSpeed = speed;

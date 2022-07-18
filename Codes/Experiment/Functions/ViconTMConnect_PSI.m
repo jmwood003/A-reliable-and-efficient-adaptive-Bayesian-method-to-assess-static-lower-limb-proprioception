@@ -96,6 +96,7 @@ extreme_stims = extreme_options(randperm(length(extreme_options)));
 pre_selects = [extreme_trials, rand_trials];
 pre_selects(isnan(pre_selects)==1) = [];
 
+
 %--------------------------------------------------------------------------
 %--------------------------------------------------------------------------
 %Set up Vicon SDK----------------------------------------------------------

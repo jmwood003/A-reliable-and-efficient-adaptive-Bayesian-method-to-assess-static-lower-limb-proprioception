@@ -94,11 +94,6 @@ BslDiff = mean(MkrDiff);
 Rstart = mean(RMALY);
 Lstart = mean(LMALY);
 
-
-if TransmitMulticast
-  MyClient.StopTransmittingMulticast();
-end  
-
 % Disconnect and dispose
 MyClient.Disconnect();
 
