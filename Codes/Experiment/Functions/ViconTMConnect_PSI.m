@@ -565,11 +565,11 @@ while trial <= Ntrials
       AllResponses = Fig.UserData.Resp_Text.Value;
       AllResponses = AllResponses(1:end-1); %remove the blank
 
-      %Convert the resoponse to a binary response (probability of left)
+      %Convert the response to a binary response (probability of left)
       BinaryResponses = contains(AllResponses,'left');
           
       %Create new vectors for repeated stimuli 
-      Unique_stims = unique(AllStims,'stable');
+      Unique_stims = unique(AllStims);
       Nstims = []; Kleft = [];
       for s = 1:length(Unique_stims)
           stim_idx = find(Unique_stims(s)==AllStims);
