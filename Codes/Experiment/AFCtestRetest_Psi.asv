@@ -2,7 +2,7 @@
 close all; clear all; clc; 
 
 %Subject ID
-SID = 'TRTPSI_01b'; 
+SID = 'TRTPSI_01a'; 
 %Set test limb (moving limb)
 TestLimb = 'Left';
 %Number of trials
@@ -73,7 +73,7 @@ timevar = tic;
 
 %Run task
 cd(Livedir);
-Data_table = ViconTMConnect_PSI(Ntrials, X, alpha_range, beta_range, ...
+Data_table = ViconTMConnect_PSI(Ntrials, X, alpha_range, beta_raznge, ...
     pr_left_x, pr_right_x, TestLimb, offset);
 
 elapsedTime = toc(timevar);

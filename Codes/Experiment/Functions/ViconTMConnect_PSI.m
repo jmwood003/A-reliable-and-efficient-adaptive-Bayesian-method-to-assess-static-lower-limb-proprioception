@@ -568,26 +568,33 @@ while trial <= Ntrials
       %Convert the response to a binary response (probability of left)
       BinaryResponses = contains(AllResponses,'left');
           
-      %Create new vectors for repeated stimuli 
-      Unique_stims = unique(AllStims);
-      Nstims = []; Kleft = [];
-      for s = 1:length(Unique_stims)
-          stim_idx = find(Unique_stims(s)==AllStims);
-          Nstims(s) = length(stim_idx);
-          Kleft(s) = sum(BinaryResponses(stim_idx));
-      end
-    
-      %Calculate the likelihood of this response given the current parameters
-      for a = 1:length(alpha_range)
-          for b = 1:length(beta_range)
-              psi = normcdf(Unique_stims,alpha_range(a),beta_range(b));
-              likelihood(b,a) = prod((psi.^Kleft).*((1-psi).^(Nstims - Kleft)));
-          end
-      end
+      %Old posterior calculation
+%       %Create new vectors for repeated stimuli 
+%       Unique_stims = unique(AllStims);
+%       Nstims = []; Kleft = [];
+%       for s = 1:length(Unique_stims)
+%           stim_idx = find(Unique_stims(s)==AllStims);
+%           Nstims(s) = length(stim_idx);
+%           Kleft(s) = sum(BinaryResponses(stim_idx));
+%       end
+%     
+%       %Calculate the likelihood of this response given the current parameters
+%       for a = 1:length(alpha_range)
+%           for b = 1:length(beta_range)
+%               psi = normcdf(Unique_stims,alpha_range(a),beta_range(b));
+%               likelihood(b,a) = prod((psi.^Kleft).*((1-psi).^(Nstims - Kleft)));
+%           end
+%       end
+%       posterior = likelihood.*prior;
 
-      %Calculate the posterior and normalize
-      posterior = likelihood.*prior;
-      posterior = posterior./nansum(nansum(posterior));
+      %Index the posterior and normalize
+      stim_idx = find(AllStims(trial)==X);  %index the stimulus position
+      if strcmp(AllResponses(trial),'left')==1 %index the appropriate page in the lookup table
+          posterior = pr_left_lookup(:,:,stim_idx).*prior;        
+      elseif strcmp(AllResponses(trial),'right')==1
+          posterior = pr_right_lookup(:,:,stim_idx).*prior;
+      end
+      posterior = posterior./nansum(nansum(posterior)); %normalize
 
       %Marginalize and check the plot
       alpha_post = nansum(posterior,1);
