@@ -6,7 +6,7 @@ SID = 'TRTPSI_03b';
 %Set test limb (moving limb)
 TestLimb = 'Left';
 %Number of trials
-Ntrials = 50;
+Ntrials = 75;
 
 %Set paths and directories 
 addpath('C:\Users\Lab Account\Documents\GitHub\Split-Belt-AFC-Reliability\Codes\Experiment');
