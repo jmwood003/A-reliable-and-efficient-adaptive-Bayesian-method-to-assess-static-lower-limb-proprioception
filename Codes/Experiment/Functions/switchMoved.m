@@ -52,6 +52,8 @@ if strcmp(src.Value,'Stop')==1
     uiwait(Fig);    
 
 elseif strcmp(src.Value,'Go')==1
+
+    uialert(Fig,'Are the markers properly labeled in Vicon?', 'WAIT!');
     
     %Resume the trial
     uiresume(Fig);

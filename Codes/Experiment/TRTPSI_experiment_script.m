@@ -2,11 +2,11 @@
 close all; clear all; clc; 
 
 %Subject ID
-SID = 'TRTPSI_02b'; 
+SID = 'TRTPSI_03b'; 
 %Set test limb (moving limb)
 TestLimb = 'Left';
 %Number of trials
-Ntrials = 75;
+Ntrials = 50;
 
 %Set paths and directories 
 addpath('C:\Users\Lab Account\Documents\GitHub\Split-Belt-AFC-Reliability\Codes\Experiment');
