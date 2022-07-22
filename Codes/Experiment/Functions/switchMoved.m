@@ -53,10 +53,12 @@ if strcmp(src.Value,'Stop')==1
 
 elseif strcmp(src.Value,'Go')==1
 
-    uialert(Fig,'Are the markers properly labeled in Vicon?', 'WAIT!');
-    
     %Resume the trial
     uiresume(Fig);
+
+    %Double check the feet
+    msgfig = msgbox('Are the markers properly labeled in Vicon?', 'WAIT!');
+    uiwait(msgfig)
 
     %Update the user interface
     Fig.UserData.Message.BackgroundColor = 'w';   
