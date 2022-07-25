@@ -671,6 +671,9 @@ while trial <= Ntrials
       %Update the display
       stim_pos_text.Value = sprintf('%d \n',[AllStims nan]);
       start_pos_text.Value = sprintf('%d \n',AllStarts);
+      resp_text.Value = 
+      AllResponses = Fig.UserData.Resp_Text.Value;
+
       scroll(start_pos_text,'bottom');
       scroll(stim_pos_text,'bottom');
 

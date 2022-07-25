@@ -94,6 +94,8 @@ Fig.UserData.Stims.Value = sprintf('%d \n', AllStims); %Stimulus positions
 Fig.UserData.Trials.Value = sprintf('%d \n', AllTrials); %Trial number
 Fig.UserData.Starts.Value = sprintf('%d \n', AllStarts); %Start positions
 
+AllResponses = Fig.UserData.Resp_Text.Value;
+
 %Select a new stimulus position 
 %Before calculating the next trial, make sure it is not a pre-set stimulus
 if ismember(next_trial,extreme_trials)==0 && ismember(next_trial,random_trials)==0
@@ -101,29 +103,14 @@ if ismember(next_trial,extreme_trials)==0 && ismember(next_trial,random_trials)=
     %If not a pre-set response, use the corrected responses to calculate
     %the next stim position 
 
-    %Binarize the responses
-    BinaryResponses = contains(Fig.UserData.Resp_Text.Value,'left');
-    
-    %Create new vectors for repeated stimuli 
-    Unique_stims = unique(AllStims,'stable');
-    Nstims = []; Kleft = [];
-    for s = 1:length(Unique_stims)
-      stim_idx = find(Unique_stims(s)==AllStims);
-      Nstims(s) = length(stim_idx);
-      Kleft(s) = sum(BinaryResponses(stim_idx));
+    %Index the posterior and normalize
+    stim_idx = find(AllStims(error_trial)==X);  %index the stimulus position
+    if strcmp(AllResponses(error_trial),'left')==1 %index the appropriate page in the lookup table
+        posterior = pr_left_lookup(:,:,stim_idx).*prior;        
+    elseif strcmp(AllResponses(error_trial),'right')==1
+        posterior = pr_right_lookup(:,:,stim_idx).*prior;
     end
-    
-    %Calculate the likelihood of this response given the current parameters
-    for a = 1:length(alpha_range)
-      for b = 1:length(beta_range)
-          psi = normcdf(Unique_stims,alpha_range(a),beta_range(b));
-          likelihood(b,a) = prod((psi.^Kleft).*((1-psi).^(Nstims - Kleft)));
-      end
-    end
-    
-    %Calculate the posterior and normalize
-    posterior = likelihood.*prior;
-    posterior = posterior./nansum(nansum(posterior));
+    posterior = posterior./nansum(nansum(posterior)); %normalize
     
     %The posterior becomes the prior
     prior = posterior;
@@ -197,8 +184,8 @@ Fig.UserData.Switch.Value = 'Go';
 
 %Move treadmill to new stimulus position   
 %Treadmill Speeds
-minspeed = 10;
-maxspeed = 30;
+minspeed = 40;
+maxspeed = 50;
 speed = round(minspeed + (maxspeed-minspeed)*rand);
 Fig.UserData.Message.Value = ['Moving to start position (speed=' num2str(speed) ')'];
 if startpos < MkrDiff
