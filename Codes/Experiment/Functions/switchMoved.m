@@ -57,7 +57,7 @@ elseif strcmp(src.Value,'Go')==1
     uiresume(Fig);
 
     %Double check the feet
-    msgfig = msgbox('Are the markers properly labeled in Vicon?', 'WAIT!');
+    msgfig = msgbox('Click ok when the markers properly labeled in Vicon', 'WAIT!');
     uiwait(msgfig)
 
     %Update the user interface

@@ -73,20 +73,17 @@ next_trial = error_trial+1;
 AllStims_str = Fig.UserData.Stims.Value;
 AllStarts_str = Fig.UserData.Starts.Value;
 AllTrials_str = Fig.UserData.Trials.Value;
+AllAlpha_str = Fig.UserData.a_est.Value;
+AllBeta_str = Fig.UserData.b_est.Value;
 for i = 1:length(AllTrials_str)
     AllStims(i) = str2double(AllStims_str{i});
     AllStarts(i) = str2double(AllStarts_str{i});
     AllTrials(i) = str2double(AllTrials_str{i});
-end
-AllStarts(isnan(AllStarts)==1) = [];
-AllStims(isnan(AllStims)==1) = [];
-
-AllAlpha_str = Fig.UserData.a_est.Value;
-AllBeta_str = Fig.UserData.b_est.Value;
-for i = 1:length(AllAlpha_str)
     AllAlphas(i) = str2double(AllAlpha_str{i});
     AllBetas(i) = str2double(AllBeta_str{i});
 end
+AllStarts(isnan(AllStarts)==1) = [];
+AllStims(isnan(AllStims)==1) = [];
 
 %Index the next stimulus and start position
 next_start = AllStarts(end);

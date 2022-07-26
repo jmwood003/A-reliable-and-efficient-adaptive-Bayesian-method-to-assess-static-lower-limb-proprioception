@@ -232,14 +232,14 @@ resp_text.Layout.Column = 4;
 alpha_label = uilabel(gl,'Text', ' Alpha','FontSize',20);
 alpha_label.Layout.Row = 2;
 alpha_label.Layout.Column = 5;
-alpha_text = uitextarea(gl,'FontSize',10);
+alpha_text = uitextarea(gl,'FontSize',20);
 alpha_text.Layout.Row = 3;
 alpha_text.Layout.Column = 5;
 %Beta
 beta_label = uilabel(gl,'Text', ' Beta','FontSize',20);
 beta_label.Layout.Row = 2;
 beta_label.Layout.Column = 6;
-beta_text = uitextarea(gl,'FontSize',10);
+beta_text = uitextarea(gl,'FontSize',20);
 beta_text.Layout.Row = 3;
 beta_text.Layout.Column = 6;
 %Buttons 
@@ -533,25 +533,17 @@ while trial <= Ntrials
       %Need to get the start position and end position from the GUI
       AllStims_str = Fig.UserData.Stims.Value;
       AllStarts_str = Fig.UserData.Starts.Value;
-      AllTrials_str = Fig.UserData.Trials.Value;   
+      AllTrials_str = Fig.UserData.Trials.Value;
       AllStims = []; AllStarts = []; All_trial_nums = []; 
       for i = 1:length(AllTrials_str)
           AllStims(i) = str2double(AllStims_str{i});
           AllStarts(i) = str2double(AllStarts_str{i});
-          All_trial_nums(i) = str2double(AllTrials_str{i});       
+          All_trial_nums(i) = str2double(AllTrials_str{i});
       end
       AllStarts(isnan(AllStarts)==1) = [];
       AllStims(isnan(AllStims)==1) = [];
-      trial = All_trial_nums(end); 
+      trial = All_trial_nums(end);
 
-      %Update the display
-      AllAlpha_str = Fig.UserData.a_est.Value;
-      AllBeta_str = Fig.UserData.b_est.Value;
-      for i =1:length(AllAlpha_str)
-          alpha_EV(i) = str2double(AllAlpha_str{i});
-          beta_EV(i) = str2double(AllBeta_str{i});  
-      end      
-          
       %Stop treadmill
       TMtestSpeed = 0;  
       %Format treadmill input
@@ -608,10 +600,11 @@ while trial <= Ntrials
       alpha_EV(trial) = nansum(alpha_range.*alpha_post);
       beta_EV(trial) = nansum(beta_range.*beta_post); 
 
-      alpha_text.Value = sprintf('%d \n', alpha_EV);
-      beta_text.Value = sprintf('%d \n', beta_EV);
+      %Update the display
+      alpha_text.Value = sprintf('%d \n',alpha_EV);
+      beta_text.Value = sprintf('%d \n',beta_EV);
       scroll(alpha_text,'bottom');
-      scroll(beta_text,'bottom');     
+      scroll(beta_text,'bottom');      
 
       %The posterior becomes the prior
       prior = posterior;
