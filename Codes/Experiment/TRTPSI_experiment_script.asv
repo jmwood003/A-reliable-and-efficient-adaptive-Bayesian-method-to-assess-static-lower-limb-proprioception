@@ -15,7 +15,6 @@ Livedir = 'C:\Program Files\Vicon\DataStream SDK\Win64\MATLAB';
 datadir = 'C:\Users\Lab Account\Documents\GitHub\Split-Belt-AFC-Reliability\Data\TestRetest_PSI';
 backupdir = 'C:\Users\Lab Account\University of Delaware - o365\Team-CHS-PT-Morton Lab - Split-Belt Recal - Jonathan - Split-Belt Recal - Jonathan\Data\Backup';
 serverdir = 'C:\Users\Lab Account\University of Delaware - o365\Team-CHS-PT-Morton Lab - Split-Belt Recal - Jonathan - Split-Belt Recal - Jonathan\Data\PSI';
-trial_dir = 'C:\Users\Lab Account\Documents\GitHub\Split-Belt-AFC-Reliability\Data\TestRetest_PSI\Current_trial';
 cd(datadir);
 
 %Initialize subject table
@@ -74,8 +73,9 @@ PhaseStart = datestr(Date);
 timevar = tic;
 
 %Run task
+cd(Livedir);
 Data_table = ViconTMConnect_PSI(Ntrials, X, alpha_range, beta_range, ...
-    pr_left_x, pr_right_x, TestLimb, offset, Livedir, trial_dir);
+    pr_left_x, pr_right_x, TestLimb, offset, Livedir, datadir);
 
 elapsedTime = toc(timevar);
 
