@@ -46,7 +46,8 @@ Fig = ancestor(src,"figure","toplevel");
 %Update the interface
 Fig.UserData.Switch.Value = 'Stop';
 Fig.UserData.Message.Value = 'Error!';
-Fig.UserData.Message.BackgroundColor = 'r';              
+Fig.UserData.Message.BackgroundColor = 'r';   
+Fig.UserData.Error_lamp.Color = 'r';   
 
 %Index all stimuli and start positions and turn the into numerical format
 AllStims_str = Fig.UserData.Stims.Value;
@@ -86,7 +87,7 @@ AllStarts = AllStarts(1:error_trial);
 AllTrials = AllTrials(1:error_trial);
 AllAlphas = AllAlphas(1:error_trial);
 AllBetas = AllBetas(1:error_trial);
-Fig.UserData.Resp_Text.Value = Fig.UserData.Resp_Text.Value(1:error_trial-1); %Responses
+Fig.UserData.Resp_Text.Value = [Fig.UserData.Resp_Text.Value(1:error_trial-1); ' ']; %Responses
 Fig.UserData.Stims.Value = sprintf('%d \n', AllStims); %Stimulus positions
 Fig.UserData.Trials.Value = sprintf('%d \n', AllTrials); %Trial number
 Fig.UserData.Starts.Value = sprintf('%d \n', [AllStarts nan]); %Start positions

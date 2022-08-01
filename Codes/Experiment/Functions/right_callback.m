@@ -16,6 +16,8 @@ Fig.UserData.Right_btn.Enable = 'off';
 
 %Update the response in the user interface 
 Responses = Fig.UserData.Resp_Text.Value;
+empty_idx = contains(Responses,' ');
+Responses(empty_idx) = [];
 trials = Fig.UserData.Trials.Value; %Index the current trial number
 current_trial = str2double(trials{end});
 Responses{current_trial} = 'right'; %update the response for the current trial

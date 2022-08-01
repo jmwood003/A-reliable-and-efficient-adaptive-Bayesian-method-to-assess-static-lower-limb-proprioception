@@ -202,7 +202,7 @@ gl.ColumnWidth = {60,150,150,150,70,70,70};
 %Message bar
 message_text = uitextarea(gl,'HorizontalAlignment','center','FontSize',25);
 message_text.Layout.Row = 1;
-message_text.Layout.Column = [1 7];
+message_text.Layout.Column = [1 6];
 %Trial numbers
 trial_label = uilabel(gl,'Text', 'Trial','FontSize',20);
 trial_label.Layout.Row = 2;
@@ -259,6 +259,10 @@ Err_btn.Layout.Column = 4;
 Switch = uiswitch(gl,'rocker','Items', {'Go','Stop'}, 'ValueChangedFcn',{@switchMoved, t, TLstr});
 Switch.Layout.Row = 4;
 Switch.Layout.Column = 1;
+%Error lamp
+Err_lamp = uilamp(gl);
+Err_lamp.Layout.Row = 1;
+Err_lamp.Layout.Column = 7;
 %Force ratio gauge 
 uilabel(Fig, 'Position',[250 100 300 200], 'FontSize',20, 'Text', 'Force Ratio');
 FG = uigauge(Fig, 'semicircular', 'Position',[150 10 300 300],'Limits',[50 150]);
@@ -277,8 +281,8 @@ Pos_slide.Layout.Column = 7;
 %Allow for indexing data within callback functions
 Fig.UserData = struct("Resp_Text", resp_text, "Trials", trial_text, "Switch", Switch, ...
     "Message", message_text, "Stims", stim_pos_text, "Starts", start_pos_text,...
-    "Position", Pos_slide, "Left_btn", L_btn, "Right_btn", R_btn, "Error_btn", Err_btn,...
-    "a_est", alpha_text, "b_est", beta_text);
+    "Position", Pos_slide, "Left_btn", L_btn, "Right_btn", R_btn, "a_est", alpha_text, "b_est", beta_text, ...
+    "Error_btn", Err_btn, "Error_lamp", Err_lamp);
 
 %Disable buttons for now
 set(L_btn,'Enable','off');
@@ -478,6 +482,9 @@ while trial <= Ntrials
           AllStarts(isnan(AllStarts)==1) = [];
           AllStims(isnan(AllStims)==1) = [];
       end
+      AllResponses = resp_text.Value;
+      empty_idx = contains(AllResponses,' ');
+      AllResponses(empty_idx) = [];   
 
       %Stop treadmill
       TMtestSpeed = 0;  
@@ -500,7 +507,9 @@ while trial <= Ntrials
       %update the start and stim position displays 
       start_pos_text.Value = sprintf('%d \n', [AllStarts, nan]);
       stim_pos_text.Value = sprintf('%d \n', AllStims);
+      resp_text.Value = [AllResponses; ' '];
       scroll(start_pos_text,'bottom');
+      scroll(resp_text,'bottom');
       scroll(stim_pos_text,'bottom');
 
       %Pause for a random time period from 0-2 seconds 
@@ -568,17 +577,33 @@ while trial <= Ntrials
       %Update the marker difference display slider
       Pos_slide.Value = MkrDiff;
       
-      %Engage the visual feedback/prompts
-      choicelbl.Visible = 'on'; %Display the question for the subject
-      LB.Visible = 'on';
-      RB.Visible = 'on';
-      message_text.Value = 'At stimulus location, make selection'; %Display message
-      message_text.BackgroundColor = 'g';          
+      %If there is no error, show the display
+      if Err_lamp.Color(1) == 0 && Err_lamp.Color(2) == 1 && Err_lamp.Color(3) == 0
+
+          %Engage the visual feedback/prompts
+          choicelbl.Visible = 'on'; %Display the question for the subject
+          LB.Visible = 'on';
+          RB.Visible = 'on';
+
+          %Engage the visual feedback/prompts
+          message_text.Value = 'At stimulus location, make selection'; %Display message
+          message_text.BackgroundColor = 'g';          
+          Switch.Value = 'Stop';          
+
+      else 
+
+          %Engage the visual feedback/prompts
+          message_text.Value = 'Correct the erroneous response'; %Display message
+          message_text.BackgroundColor = 'r';          
+             
+      end
+
       set(L_btn,'Enable','on'); %Enable buttons
       set(R_btn,'Enable','on');
       set(Err_btn,'Enable','off'); %Disable error button
-      Switch.Value = 'Stop';
+      Switch.Value = 'Stop';        
       uiwait(Fig); %Wait for a response
+      Err_lamp.Color = 'g';
 
       %Turn off the display for the subject
       choicelbl.Visible = 'off';
@@ -621,10 +646,10 @@ while trial <= Ntrials
       T.AllStims = AllStims';
       T.AllResponses = AllResponses;
       T.BinaryResponses = contains(AllResponses,'left');
-      T.Alpha_EV = alpha_EV';
-      T.Beta_EV = beta_EV';
-      T.StartSpeeds = StartSpeeds';
-      T.StimSpeeds = StimSpeeds';
+      T.Alpha_EV = alpha_EV(1:trial)';
+      T.Beta_EV = beta_EV(1:trial)';
+      T.StartSpeeds = StartSpeeds(1:trial)';
+      T.StimSpeeds = StimSpeeds(1:trial)';
       cd(trial_dir);
       save('trial_data', 'T');
       cd(Livedir);
@@ -713,10 +738,11 @@ while trial <= Ntrials
       
       %Update the display
       stim_pos_text.Value = sprintf('%d \n',[AllStims nan]);
-%       resp_text.Value = sprintf('%d \n',[AllResponses; '']);      
+      resp_text.Value = [AllResponses; ' '; ' '];      
       start_pos_text.Value = sprintf('%d \n',AllStarts);
       scroll(start_pos_text,'bottom');
       scroll(stim_pos_text,'bottom');
+      scroll(resp_text, 'bottom');
 
       %Move treadmill to new stimulus position   
       speed = round(min_speed_start + (max_speed_start-min_speed_start)*rand);
