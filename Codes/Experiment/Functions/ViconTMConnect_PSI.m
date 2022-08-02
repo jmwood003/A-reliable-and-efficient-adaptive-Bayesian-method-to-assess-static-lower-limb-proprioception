@@ -45,8 +45,8 @@ strtpos_sigma = 5;
 strtpos_mu = 100-offset;
 
 %Set the min and max treadmill Speeds
-min_speed_stim = 40;
-max_speed_stim = 50;
+min_speed_stim = 10;
+max_speed_stim = 30;
 min_speed_start = 40;
 max_speed_start = 50;
 
