@@ -2,7 +2,7 @@
 close all; clear all; clc; 
 
 %Subject ID
-SID = 'TRTPSI_08b'; 
+SID = 'TRTPSI_10b'; 
 %Set test limb (moving limb)
 TestLimb = 'Left';
 %Number of trials
@@ -67,6 +67,7 @@ disp('Trial Complete');
 disp(['Baseline Bias = ', num2str(BslDiff)]);
 
 %% AFC task
+restart_str = 'no';
 
 %Time variables
 Date = datetime('now');
@@ -75,7 +76,7 @@ timevar = tic;
 
 %Run task
 Data_table = ViconTMConnect_PSI(Ntrials, X, alpha_range, beta_range, ...
-    pr_left_x, pr_right_x, TestLimb, offset, Livedir, trial_dir);
+    pr_left_x, pr_right_x, TestLimb, offset, Livedir, trial_dir, restart_str);
 
 elapsedTime = toc(timevar);
 

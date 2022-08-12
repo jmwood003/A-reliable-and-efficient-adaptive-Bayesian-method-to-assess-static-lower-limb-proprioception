@@ -1,4 +1,4 @@
-function T = ViconTMConnect_PSI(Ntrials, X, alpha_range, beta_range, pr_left_lookup, pr_right_lookup, TLstr, offset, Livedir, trial_dir)
+function T = ViconTMConnect_PSI(Ntrials, X, alpha_range, beta_range, pr_left_lookup, pr_right_lookup, TLstr, offset, Livedir, trial_dir, restart_str)
 
 %Description: runs an AFC task using the PSI algorithm by connecting 
 % through vicon and through the treadmill controller
@@ -34,6 +34,11 @@ function T = ViconTMConnect_PSI(Ntrials, X, alpha_range, beta_range, pr_left_loo
 %Set some parameters for the test
 %--------------------------------------------------------------------------
 %--------------------------------------------------------------------------
+
+% if strcmp(restart_str,'yes')==1
+%   cd(trial_dir);
+% 
+% end
 
 cd(Livedir);
 
@@ -348,6 +353,7 @@ alpha_EV = [];
 beta_EV = [];
 AllResponses = [];
 StimSpeeds = [];
+StartSpeeds = [];
 
 %Update the display
 trial_text.Value = sprintf('%d \n',trial);
@@ -356,7 +362,7 @@ stim_pos_text.Value = sprintf('%d \n',nan);
 
 %Move treadmill to the start position position   
 speed = round(min_speed_start + (max_speed_start-min_speed_start)*rand);
-StartSpeeds = speed; %Record the speed
+StartSpeeds(1) = speed; %Record the speed
 message_text.Value = ['Moving to start position (speed=' num2str(speed) ')'];
 if str2double(start_pos_text.Value{end}) < offset
   TMtestSpeed = speed;
@@ -642,10 +648,10 @@ while trial <= Ntrials
       %save the trial
       T = table;
       T.Trial_num = [1:trial]';
-      T.AllStarts = AllStarts';
-      T.AllStims = AllStims';
-      T.AllResponses = AllResponses;
-      T.BinaryResponses = contains(AllResponses,'left');
+      T.AllStarts = AllStarts(1:trial)';
+      T.AllStims = AllStims(1:trial)';
+      T.AllResponses = AllResponses(1:trial);
+      T.BinaryResponses = contains(AllResponses(1:trial),'left');
       T.Alpha_EV = alpha_EV(1:trial)';
       T.Beta_EV = beta_EV(1:trial)';
       T.StartSpeeds = StartSpeeds(1:trial)';

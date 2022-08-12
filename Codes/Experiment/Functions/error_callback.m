@@ -43,6 +43,8 @@ fwrite(t,Payload,'uint8');
 %Index the user interface object
 Fig = ancestor(src,"figure","toplevel");
 
+orig_message = Fig.UserData.Message.Value;
+
 %Update the interface
 Fig.UserData.Switch.Value = 'Stop';
 Fig.UserData.Message.Value = 'Error!';
@@ -78,6 +80,16 @@ if strcmp(error_str, 'last trial') == 1
 elseif strcmp(error_str, '2 trials ago') == 1
     error_trial = current_trial-2;
 elseif strcmp(error_str, 'nevermind, no error') == 1
+    Fig.UserData.Message.BackgroundColor = 'white';
+    Fig.UserData.Switch.Value = 'Go';  
+    Fig.UserData.Error_lamp.Color = 'g';   
+    Fig.UserData.Message.Value = orig_message;
+    return;
+else
+    Fig.UserData.Message.BackgroundColor = 'white';
+    Fig.UserData.Switch.Value = 'Go'; 
+    Fig.UserData.Error_lamp.Color = 'g';   
+    Fig.UserData.Message.Value = orig_message;
     return;
 end
 
