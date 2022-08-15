@@ -295,7 +295,7 @@ while trial <= 2
   Output_GetDeviceOutputComponentNameR = MyClient.GetDeviceOutputComponentName( Output_GetDeviceNameR.DeviceName, typecast( DeviceOutputIndexR, 'uint32') );
   %The above should index the the Fz component of the force plate (use the
   %below expression to check):
-%   Output_GetDeviceOutputComponentNameR.DeviceOutputName
+  Output_GetDeviceOutputComponentNameR.DeviceOutputName
 %   Output_GetDeviceOutputComponentNameR.DeviceOutputComponentName
 
   % Get the device output value
