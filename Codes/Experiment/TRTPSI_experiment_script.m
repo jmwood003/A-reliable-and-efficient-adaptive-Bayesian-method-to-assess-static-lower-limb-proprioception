@@ -2,7 +2,7 @@
 close all; clear all; clc; 
 
 %Subject ID
-SID = 'TRTPSI_15b'; 
+SID = 'TRTPSI_16b'; 
 %Set test limb (moving limb)
 TestLimb = 'Left';
 %Number of trials
